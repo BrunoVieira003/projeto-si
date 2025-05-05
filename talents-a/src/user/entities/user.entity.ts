@@ -10,4 +10,7 @@ export class User {
 
     @Column()
     cpf: string
+
+    @Column()
+    password: string
 }

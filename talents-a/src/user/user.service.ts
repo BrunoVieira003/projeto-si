@@ -15,7 +15,8 @@ export class UserService {
   async create(createUserDto: CreateUserDto) {
     const newUser = this.usersRepository.create({
       email: createUserDto.email,
-      cpf: createUserDto.cpf
+      cpf: createUserDto.cpf,
+      password: createUserDto.password
     })
 
     return await this.usersRepository.save(newUser)
@@ -25,8 +26,12 @@ export class UserService {
     return await this.usersRepository.find()
   }
 
-  async findOne(id: string) {
+  async findById(id: string) {
     return await this.usersRepository.findOneBy({id})
+  }
+
+  async findByEmail(email: string){
+    return await this.usersRepository.findOneBy({email})
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
@@ -41,6 +46,10 @@ export class UserService {
 
     if(updateUserDto.cpf){
       oldUser.cpf = updateUserDto.cpf
+    }
+
+    if(updateUserDto.password){
+      oldUser.password = updateUserDto.password
     }
 
     return await this.usersRepository.save(oldUser)

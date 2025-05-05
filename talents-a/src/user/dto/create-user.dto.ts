@@ -1,4 +1,4 @@
-import { IsArray, IsEmail, IsNotEmpty, IsOptional, IsString } from "class-validator"
+import { IsArray, IsEmail, IsNotEmpty, IsOptional, IsString, IsStrongPassword } from "class-validator"
 
 export class CreateUserDto {
     @IsEmail()
@@ -7,4 +7,7 @@ export class CreateUserDto {
     @IsString()
     @IsNotEmpty()
     cpf: string
+
+    @IsString()
+    password: string
 }
