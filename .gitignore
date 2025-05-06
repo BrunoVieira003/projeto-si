@@ -1,2 +1,3 @@
-talents-a/node_modules
-talents-a/dist
+node_modules
+dist
+.env
