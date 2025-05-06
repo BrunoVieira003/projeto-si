@@ -1,0 +1,6 @@
+export enum HistoryAction {
+  CREATE_USER = 'CREATE_USER',
+  UPDATE_USER = 'UPDATE_USER',
+  CREATE_TERM = 'CREATE_TERM',
+  UPDATE_TERM = 'UPDATE_TERM',
+}
