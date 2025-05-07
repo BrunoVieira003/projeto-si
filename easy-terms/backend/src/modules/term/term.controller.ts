@@ -8,7 +8,6 @@ import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/role.guard";
 import { Role } from "../user/enums/role.enum";
 import { Roles } from "../auth/decorators/role.decorator";
-import { ConfirmConsentDTO } from "./dto/confirm-consent.dto";
 
 @Controller("/terms")
 @ApiTags("terms")
@@ -43,12 +42,6 @@ export class TermController {
         termCreated.updatedAt,
         termCreated.isActive,),
     };
-  }
-
-  @Post('consent/confirm')
-  @ApiOperation({ summary: "Confirma o consentimento para os termos assinalados" })
-  async confirmConsent(@Body() dto: ConfirmConsentDTO) {
-    return this.termService.confirmConsent(dto);
   }
 
   @Get()

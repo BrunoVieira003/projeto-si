@@ -43,13 +43,4 @@ export class UserTermAcceptanceService {
     );
   }
 
-  async revokeConsent(id: string): Promise<UserTermAcceptanceEntity | null> {
-    const record = await this.userTermAcceptanceRepository.findOne({ where: { id }, relations: ['user', 'term'] });
-
-    if (!record) return null;
-
-    record.revokedAt = new Date(); // Define a data de revogação como a data atual
-    return this.userTermAcceptanceRepository.save(record);
-  }
-
 }

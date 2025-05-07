@@ -19,8 +19,6 @@ export class AuthenticationService {
 
   async login(email: string, password: string) {
     const user = await this.userService.findByEmail(email);
-    
-    await this.userService.validateUser(email);
 
     const userAuthenticated = await bcrypt.compare(password, user.password);
 
