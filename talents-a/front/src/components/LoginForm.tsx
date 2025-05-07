@@ -7,8 +7,8 @@ import Link from 'next/link'
 interface Props {
   title: string
   onSubmit: (email: string, password: string) => void
-  linkText: string
-  linkHref: string
+  linkText?: string
+  linkHref?: string
 }
 
 export default function LoginForm({ title, onSubmit, linkText, linkHref }: Props) {
@@ -26,6 +26,7 @@ export default function LoginForm({ title, onSubmit, linkText, linkHref }: Props
       className="bg-white p-8 rounded shadow-md w-96 space-y-4"
     >
       <h2 className="text-xl font-bold">{title}</h2>
+      <label htmlFor="email" className='mb-10'>Email</label>
       <input
         type="email"
         placeholder="E-mail"
@@ -34,6 +35,7 @@ export default function LoginForm({ title, onSubmit, linkText, linkHref }: Props
         onChange={(e) => setEmail(e.target.value)}
         required
       />
+      <label htmlFor="email" className='mb-10'>Senha</label>
       <input
         type="password"
         placeholder="Senha"
@@ -49,7 +51,7 @@ export default function LoginForm({ title, onSubmit, linkText, linkHref }: Props
         Entrar
       </button>
       <p className="text-sm text-center">
-        <Link href={linkHref} className="text-blue-500 hover:underline">{linkText}</Link>
+        <Link href={linkHref || ''} className="text-blue-500 hover:underline">{linkText}</Link>
       </p>
     </form>
   )
