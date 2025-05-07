@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import 'reflect-metadata'
 import { User } from './user/entities/user.entity';
 import { AuthModule } from './auth/auth.module';
+import { PortabilityModule } from './portability/portability.module';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { AuthModule } from './auth/auth.module';
       synchronize: true,
     }),
     UserModule,
-    AuthModule
+    AuthModule,
+    PortabilityModule
   ],
   controllers: [AppController],
   providers: [AppService],
