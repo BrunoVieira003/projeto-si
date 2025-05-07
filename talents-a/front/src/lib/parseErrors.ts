@@ -9,14 +9,14 @@ interface IOptions{
     }
 }
 
-export function parseError(error: any | unknown, options?: IOptions): {ok: boolean, message: string}{
+export function parseError(error: any | unknown, options?: IOptions): {ok: boolean, message: string, data: null}{
     if(isAxiosError(error)){
-        if(error.status === 500) return {ok: false, message: options?.messages[500] || 'Um erro ocorreu no servidor. Tente novamente'};
-        if(error.status === 400) return {ok: false, message: options?.messages[400] || error.response?.data.message[0]}
-        if(error.status === 401) return {ok: false, message: options?.messages[401] || 'Acesso não autorizado'};
-        if(error.status === 404) return {ok: false, message: options?.messages[404] || 'Não encontrado'}
+        if(error.status === 500) return {ok: false, message: options?.messages[500] || 'Um erro ocorreu no servidor. Tente novamente', data: null};
+        if(error.status === 400) return {ok: false, message: options?.messages[400] || error.response?.data.message[0], data: null}
+        if(error.status === 401) return {ok: false, message: options?.messages[401] || 'Acesso não autorizado', data: null};
+        if(error.status === 404) return {ok: false, message: options?.messages[404] || 'Não encontrado', data: null}
     }
     
     console.error(error)
-    return {ok: false, message: error.message}
+    return {ok: false, message: error.message, data: null}
 }

@@ -3,15 +3,18 @@
 import { useRouter } from 'next/navigation'
 import LoginForm from '@/components/LoginForm'
 import { login } from '@/lib/auth'
+import toast from 'react-hot-toast'
 
 export default function LoginPage() {
   const router = useRouter()
 
   const handleLogin = async (email: string, password: string) => {
     const response = await login(email, password)
-    alert(response.message)
     if(response.ok){
+        toast.success(response.message)
         router.push('profile')
+    }else{
+        toast.error(response.message)
     }
     
   }
