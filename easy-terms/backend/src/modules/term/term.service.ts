@@ -4,7 +4,6 @@ import { Repository } from "typeorm";
 import { TermEntity } from "./entities/term.entity";
 import { CreateTermDTO } from "./dto/create-term.dto";
 import { ListTermsDTO } from "./dto/list-term.dto";
-import { UpdateTermDTO } from "./dto/update-term.dto";
 import { HistoryAction } from "../history/enums/history-action.enum";
 import { HistoryService } from "../history/history.service";
 import { HistoryEntity } from "../history/enums/history-entity.enum";
@@ -18,8 +17,20 @@ export class TermService {
   ) { }
 
   async createTerm(data: CreateTermDTO) {
-    const termEntity = new TermEntity();
-    Object.assign(termEntity, data as TermEntity);
+    // Busca o último termo com o mesmo título para obter a maior versão
+    const lastTerm = await this.termRepository.findOne({
+      where: { title: data.title },
+      order: { version: 'DESC' },
+    });
+
+    const nextVersion = (lastTerm?.version ?? 0) + 1;
+
+    // Cria nova instância com a próxima versão
+    const termEntity = this.termRepository.create({
+      ...data,
+      version: nextVersion,
+      isActive: true,
+    });
 
     const termCreated = await this.termRepository.save(termEntity);
 
@@ -42,30 +53,9 @@ export class TermService {
         term.content,
         term.version,
         term.createdAt,
-        term.updatedAt,
         term.isActive)
     );
     return termsList;
-  }
-
-  async updateTerm(id: string, newData: UpdateTermDTO) {
-    const term = await this.termRepository.findOneBy({ id });
-
-    if (!term) {
-      throw new NotFoundException("O termo não foi encontrado.");
-    }
-
-    Object.assign(term, newData as TermEntity);
-    const updatedTerm = await this.termRepository.save(term);
-
-    await this.historyService.log(
-      HistoryAction.UPDATE_TERM,
-      HistoryEntity.TERM,
-      id,
-      term,
-    );
-
-    return updatedTerm;
   }
 
   async deleteTerm(id: string) {

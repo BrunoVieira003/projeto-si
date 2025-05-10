@@ -1,48 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Table, Form, Input, Switch, Button, Card, Tag } from 'antd';
-import { createTerm, getTerms, updateTerm, deleteTerm } from '../../services/term/termService';
-import { CreateTermPayload, UpdateTermPayload } from '../../types/term';
+import { Table, Form, Input, Button, Card, Tag, Modal } from 'antd';
+import { createTerm, getTerms } from '../../services/term/termService';
+import { CreateTermPayload } from '../../types/term';
 import { SweetAlert } from '../../components/SweetAlert/SweetAlert';
-import { EditTermModal } from '../../components/EditTermModal/EditTermModal';
-import { Popconfirm } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
 export default function TermsPage() {
   const [form] = Form.useForm();
   const [terms, setTerms] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedTerm, setSelectedTerm] = useState<UpdateTermPayload>({} as UpdateTermPayload);
-
-  const handleEdit = (term: any) => {
-    setSelectedTerm(term);
-    setEditModalOpen(true);
-  };
-
-  const handleUpdateTerm = async (values: UpdateTermPayload) => {
-    SweetAlert.loading();
-    
-    try {
-      await updateTerm(selectedTerm.id, values); // ou `updateTerm` se tiver
-      SweetAlert.success('Atualizado com sucesso!', 'O termo foi atualizado.');
-      setEditModalOpen(false);
-      fetchTerms();
-    } catch {
-      SweetAlert.error('Erro ao atualizar termo', 'Tente novamente.');
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    SweetAlert.loading();
-    try {
-      await deleteTerm(id);
-      SweetAlert.success('Termo excluído', 'O termo foi removido com sucesso.');
-      fetchTerms();
-    } catch {
-      SweetAlert.error('Erro ao excluir termo', 'Tente novamente.');
-    }
-  };  
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedContent, setSelectedContent] = useState<string>('');
 
   const fetchTerms = async () => {
     setLoading(true);
@@ -85,6 +53,29 @@ export default function TermsPage() {
       key: 'version'
     },
     {
+      title: 'Conteúdo',
+      dataIndex: 'content',
+      key: 'content',
+      render: (content: string) => (
+        <div
+          onClick={() => {
+            setSelectedContent(content);
+            setViewModalOpen(true);
+          }}
+          style={{
+            maxWidth: 200,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            cursor: 'pointer',
+            color: '#1890ff'
+          }}
+        >
+          {'Ver conteúdo'}
+        </div>
+      )
+    },
+    {
       title: 'Ativo',
       dataIndex: 'isActive',
       key: 'isActive',
@@ -101,36 +92,19 @@ export default function TermsPage() {
       key: 'createdAt',
       render: (value: string) => new Date(value).toLocaleString('pt-BR'),
     },
-    {
-      title: 'Data de Atualização',
-      dataIndex: 'updatedAt',
-      key: 'updatedAt',
-      render: (value: string) => new Date(value).toLocaleString('pt-BR'),
-    },
-    {
-      title: 'Ações',
-      key: 'actions',
-      render: (_: any, record: any) => (
-        <div style={{ display: 'flex', gap: 12 }}>
-          <EditOutlined
-            style={{ color: '#1890ff', cursor: 'pointer' }}
-            onClick={() => handleEdit(record)}
-          />
-          <Popconfirm
-            title="Tem certeza que deseja excluir?"
-            okText="Sim"
-            cancelText="Não"
-            onConfirm={() => handleDelete(record.id)}
-          >
-            <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-          </Popconfirm>
-        </div>
-      )
-    }    
   ];
 
   return (
-    <div style={{ maxWidth: '100%', padding: '20px' }}>
+    <div>
+
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: 24, marginBottom: 16 }}>Gerenciar Termos de Uso</h1>
+        <p style={{ fontSize: 16, marginBottom: 16 }}>
+          Aqui você pode cadastrar novos termos de uso e visualizar os já cadastrados.
+        </p>
+        <span>Observação: Ao criar um novo termo com um título já existente, o sistema automaticamente incrementa a versão do termo.</span>
+      </div>
+
       <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
         {/* Card do formulário */}
         <Card
@@ -152,22 +126,6 @@ export default function TermsPage() {
               rules={[{ required: true, message: 'Por favor, insira o conteúdo do termo.' }]}
             >
               <Input.TextArea rows={4} />
-            </Form.Item>
-
-            <Form.Item
-              label="Versão"
-              name="version"
-              rules={[{ required: true, message: 'Por favor, insira a versão.' }]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              label="Ativo"
-              name="isActive"
-              valuePropName="checked"
-            >
-              <Switch />
             </Form.Item>
 
             <Form.Item>
@@ -192,12 +150,15 @@ export default function TermsPage() {
           />
         </Card>
 
-        <EditTermModal
-          open={editModalOpen}
-          onClose={() => setEditModalOpen(false)}
-          onSubmit={handleUpdateTerm}
-          initialValues={selectedTerm || undefined}
-        />
+        <Modal
+          open={viewModalOpen}
+          onCancel={() => setViewModalOpen(false)}
+          footer={null}
+          title="Conteúdo do Termo"
+          width={800}
+        >
+          <div style={{ whiteSpace: 'pre-wrap' }}>{selectedContent}</div>
+        </Modal>
 
       </div>
     </div>

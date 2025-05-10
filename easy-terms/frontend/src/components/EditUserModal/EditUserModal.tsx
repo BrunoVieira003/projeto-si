@@ -31,9 +31,6 @@ export function EditUserModal({ open, onClose, onSubmit, initialValues }: EditUs
         <Form.Item name="name" label="Nome" rules={[{ required: true }]}>
           <Input />
         </Form.Item>
-        <Form.Item name="email" label="E-mail" rules={[{ required: true, type: 'email' }]}>
-          <Input />
-        </Form.Item>
         <Form.Item name="role" label="Função" rules={[{ required: true }]}>
           <Input />
         </Form.Item>

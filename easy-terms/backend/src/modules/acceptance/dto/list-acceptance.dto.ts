@@ -6,7 +6,6 @@ export class ListAcceptancesDTO {
     readonly id: string,
     readonly acceptedAt: Date | null,
     readonly revokedAt: Date | null,
-    readonly version: string,
     readonly user: UserEntity,
     readonly term: TermEntity,
   ) {}

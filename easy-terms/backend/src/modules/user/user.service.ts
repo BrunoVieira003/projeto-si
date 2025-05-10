@@ -8,6 +8,8 @@ import { UpdateUserDTO } from "./dto/UpdateUser.dto";
 import { HistoryAction } from "../history/enums/history-action.enum";
 import { HistoryService } from "../history/history.service";
 import { HistoryEntity } from "../history/enums/history-entity.enum";
+import { UserTermAcceptanceEntity } from "../acceptance/entities/user-term-acceptance.entity";
+import { TermEntity } from "../term/entities/term.entity";
 
 @Injectable()
 export class UserService {
@@ -15,6 +17,12 @@ export class UserService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     private readonly historyService: HistoryService,
+
+    @InjectRepository(UserTermAcceptanceEntity)
+    private readonly userTermAcceptanceRepository: Repository<UserTermAcceptanceEntity>,
+
+    @InjectRepository(TermEntity)
+    private readonly termRepository: Repository<TermEntity>,
   ) { }
 
   async createUser(data: CreateUserDTO) {
@@ -27,6 +35,20 @@ export class UserService {
       createdUser.id,
       createdUser,
     );
+
+    if (data.acceptedTermIds?.length > 0) {
+      const termEntities = await this.termRepository.findByIds(data.acceptedTermIds);
+
+      const acceptances = termEntities.map((term) => {
+        const acceptance = new UserTermAcceptanceEntity();
+        acceptance.userId = createdUser.id;
+        acceptance.termId = term.id;
+        acceptance.acceptedAt = new Date();
+        return acceptance;
+      });
+
+      await this.userTermAcceptanceRepository.save(acceptances);
+    }
 
     return createdUser;
   }
@@ -58,7 +80,7 @@ export class UserService {
   }
 
   async updateUser(id: string, newData: UpdateUserDTO) {
-    
+
     const user = await this.userRepository.findOneBy({ id });
 
     if (user === null)

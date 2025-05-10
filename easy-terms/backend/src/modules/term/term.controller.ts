@@ -1,9 +1,8 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Put, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { TermService } from "./term.service";
 import { ListTermsDTO } from "./dto/list-term.dto";
 import { CreateTermDTO } from "./dto/create-term.dto";
-import { UpdateTermDTO } from "./dto/update-term.dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/role.guard";
 import { Role } from "../user/enums/role.enum";
@@ -22,13 +21,11 @@ export class TermController {
   @ApiResponse({ status: 201, description: "Termo criado com sucesso" })
   async createTerm(
 
-    @Body() { title, content, version, isActive }: CreateTermDTO,
+    @Body() { title, content }: CreateTermDTO,
   ) {
     const termCreated = await this.termService.createTerm({
       title: title,
       content: content,
-      version: version,
-      isActive: isActive,
     });
 
     return {
@@ -39,8 +36,7 @@ export class TermController {
         termCreated.content,
         termCreated.version,
         termCreated.createdAt,
-        termCreated.updatedAt,
-        termCreated.isActive,),
+        termCreated.isActive),
     };
   }
 
@@ -55,19 +51,6 @@ export class TermController {
     return {
       mensagem: "Termos obtidos com sucesso.",
       terms: termsSaved,
-    };
-  }
-
-  @Put("/:id")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
-  @ApiOperation({ summary: "Atualizar um termo" })
-  async updateTerm(@Param("id") id: string, @Body() newData: UpdateTermDTO) {
-    const termUpdated = await this.termService.updateTerm(id, newData);
-
-    return {
-      message: "Termo atualizado com sucesso",
-      term: termUpdated,
     };
   }
 
