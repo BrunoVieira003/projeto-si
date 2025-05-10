@@ -19,9 +19,9 @@ export class AuthenticationService {
 
   async login(email: string, password: string) {
     const user = await this.userService.findByEmail(email);
- 
+
     const userAuthenticated = await bcrypt.compare(password, user.password);
-  
+
     if (!userAuthenticated) {
       throw new UnauthorizedException("O email ou a senha está incorreto.");
     }
