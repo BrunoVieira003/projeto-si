@@ -36,7 +36,7 @@ export class UserService {
       createdUser,
     );
 
-    if (data.acceptedTermIds?.length > 0) {
+    if (Array.isArray(data.acceptedTermIds) && data.acceptedTermIds.length > 0) {
       const termEntities = await this.termRepository.findByIds(data.acceptedTermIds);
 
       const acceptances = termEntities.map((term) => {
@@ -61,6 +61,11 @@ export class UserService {
         user.name,
         user.email,
         user.role,
+        user.phoneNumber,
+        user.birthDate,
+        user.city,
+        user.cpf,
+        user.state,
         user.createdAt,
         user.updatedAt,
       ),

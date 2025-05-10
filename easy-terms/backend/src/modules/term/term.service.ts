@@ -46,15 +46,26 @@ export class TermService {
 
   async listTerms() {
     const termsSaved = await this.termRepository.find();
+
     const termsList = termsSaved.map(
-      (term) => new ListTermsDTO(
-        term.id.toString(),
-        term.title,
-        term.content,
-        term.version,
-        term.createdAt,
-        term.isActive)
+      (term) =>
+        new ListTermsDTO(
+          term.id.toString(),
+          term.title,
+          term.content,
+          term.version,
+          term.createdAt,
+          term.isActive,
+          term.revocable,
+          term.purpose,
+          term.createdBy,
+          term.appliesToRoles ?? null,
+          term.validFrom ?? null,
+          term.validUntil ?? null,
+          term.acceptanceRequired ?? null,
+        )
     );
+
     return termsList;
   }
 

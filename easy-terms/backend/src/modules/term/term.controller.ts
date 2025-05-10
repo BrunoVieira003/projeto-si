@@ -19,14 +19,8 @@ export class TermController {
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: "Cria um termo" })
   @ApiResponse({ status: 201, description: "Termo criado com sucesso" })
-  async createTerm(
-
-    @Body() { title, content }: CreateTermDTO,
-  ) {
-    const termCreated = await this.termService.createTerm({
-      title: title,
-      content: content,
-    });
+  async createTerm(@Body() data: CreateTermDTO) {
+    const termCreated = await this.termService.createTerm(data);
 
     return {
       message: "Termo criado com sucesso",
@@ -34,9 +28,17 @@ export class TermController {
         termCreated.id.toString(),
         termCreated.title,
         termCreated.content,
-        termCreated.version,
+        termCreated.version, // gerado automaticamente pela service
         termCreated.createdAt,
-        termCreated.isActive),
+        termCreated.isActive, // também definido internamente
+        termCreated.revocable,
+        termCreated.purpose,
+        termCreated.createdBy,
+        termCreated.appliesToRoles ?? null,
+        termCreated.validFrom ?? null,
+        termCreated.validUntil ?? null,
+        termCreated.acceptanceRequired ?? null,
+      )
     };
   }
 

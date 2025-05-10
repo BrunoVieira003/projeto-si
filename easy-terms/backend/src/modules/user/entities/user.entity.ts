@@ -26,6 +26,21 @@ export class UserEntity {
   @OneToMany(() => UserTermAcceptanceEntity, (uta) => uta.user)
   termAcceptances?: UserTermAcceptanceEntity[];
 
+  @Column({ name: "phone_number", length: 20, nullable: true })
+  phoneNumber: string;
+
+  @Column({ name: 'birth_date', type: 'date', nullable: true })
+  birthDate: Date;
+
+  @Column({ name: 'cpf', length: 14, nullable: true, unique: true })
+  cpf: string;
+
+  @Column({ name: 'city', length: 100, nullable: true })
+  city: string;
+
+  @Column({ name: 'state', length: 2, nullable: true })
+  state: string;
+
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;
 

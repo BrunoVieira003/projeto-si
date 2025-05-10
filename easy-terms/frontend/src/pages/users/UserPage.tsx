@@ -60,7 +60,8 @@ export default function UserPage() {
 
       SweetAlert.success('Sucesso', 'Usuário atualizado');
       fetchUsers();
-    } catch {
+    } catch(error) {
+      console.log(error)
       SweetAlert.error('Erro', 'Erro ao atualizar usuário');
     }
   };
@@ -70,9 +71,21 @@ export default function UserPage() {
   }, []);
 
   const columns = [
-    { title: 'Nome', dataIndex: 'name', key: 'name' },
-    { title: 'E-mail', dataIndex: 'email', key: 'email' },
-    { title: 'Função', dataIndex: 'role', key: 'role' },
+    {
+      title: 'Nome',
+      dataIndex: 'name',
+      key: 'name'
+    },
+    {
+      title: 'E-mail',
+      dataIndex: 'email',
+      key: 'email'
+    },
+    {
+      title: 'Função',
+      dataIndex: 'role',
+      key: 'role'
+    },
     {
       title: 'Criado em',
       dataIndex: 'createdAt',
@@ -141,13 +154,14 @@ export default function UserPage() {
           rowKey="id"
           loading={loading}
           pagination={{ pageSize: 5 }}
+          scroll={{ x: 'max-content' }}
         />
 
         <EditUserModal
           open={editModalOpen}
           onClose={() => setEditModalOpen(false)}
           onSubmit={handleEditSave}
-          initialValues={selectedUser || undefined}
+          initialValues={selectedUser}
         />
 
       </Card>

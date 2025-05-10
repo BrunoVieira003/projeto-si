@@ -70,7 +70,7 @@ export default function TermsAcceptancePage() {
         },
         {
             title: 'Versão',
-            dataIndex: ['version'],
+            dataIndex: ['term','version'],
             key: 'version',
         },
         {
