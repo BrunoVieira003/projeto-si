@@ -32,10 +32,6 @@ export default function CreateUserPage() {
         try {
             await createUser(values);
 
-            if (values.acceptedTermIds.length > 0) {
-                await SweetAlert.warning('Atenção', 'Os Termos de consentimento devem ser lidos e aceitos pelo usuário via email. Caso contrário, o usuário não poderá acessar o sistema!');
-            }
-
             await SweetAlert.success('Sucesso', 'Usuário criado com sucesso!');
 
             form.resetFields();
