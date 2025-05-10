@@ -54,23 +54,23 @@ export default function TermsAcceptancePage() {
 
     const columns = [
         {
-            title: 'Usuário',
-            dataIndex: ['user', 'name'],
-            key: 'userName',
+            title: 'ID Usuário',
+            dataIndex: ['user', 'id'],
+            key: 'userId',
         },
         {
-            title: 'E-mail',
-            dataIndex: ['user', 'email'],
-            key: 'userEmail',
+            title: 'ID Termo',
+            dataIndex: ['term', 'id'],
+            key: 'termId',
         },
         {
-            title: 'Termo',
+            title: 'Nome Termo',
             dataIndex: ['term', 'title'],
             key: 'termTitle',
         },
         {
             title: 'Versão',
-            dataIndex: ['version'],
+            dataIndex: ['term','version'],
             key: 'version',
         },
         {
@@ -117,7 +117,7 @@ export default function TermsAcceptancePage() {
     ];
 
     return (
-        <div style={{ maxWidth: 1400, margin: '0 auto', padding: 24 }}>
+        <div>
             <Card>
                 <Title level={3}>Histórico de Termos Aceitos</Title>
 

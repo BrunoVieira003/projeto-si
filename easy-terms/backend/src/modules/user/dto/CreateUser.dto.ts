@@ -1,4 +1,11 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, MinLength } from "class-validator";
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  MinLength,
+  IsDateString,
+} from "class-validator";
 import { UniqueEmail } from "../validation/UniqueEmail.validation";
 import { Role } from "../enums/role.enum";
 import { ApiProperty } from "@nestjs/swagger";
@@ -22,7 +29,28 @@ export class CreateUserDTO {
   @IsNotEmpty({ message: "O papel não pode estar vazio" })
   role: Role;
 
-  @ApiProperty({ example: "[\"termId1\", \"termId2\"]", description: 'IDs dos termos que o usuário aceitou' })
+  @ApiProperty({ example: '(11) 91234-5678', description: 'Telefone do usuário', required: false })
   @IsOptional()
-  acceptedTermIds: string[]; // ← IDs dos termos que o usuário aceitou
+  phoneNumber?: string;
+
+  @ApiProperty({ example: '1995-05-10', description: 'Data de nascimento', required: false })
+  @IsOptional()
+  @IsDateString({}, { message: "A data de nascimento deve estar no formato ISO (yyyy-MM-dd)" })
+  birthDate?: Date;
+
+  @ApiProperty({ example: '123.456.789-09', description: 'CPF do usuário', required: false })
+  @IsOptional()
+  cpf?: string;
+
+  @ApiProperty({ example: 'São Paulo', description: 'Cidade do usuário', required: false })
+  @IsOptional()
+  city?: string;
+
+  @ApiProperty({ example: 'SP', description: 'Estado do usuário (sigla)', required: false })
+  @IsOptional()
+  state?: string;
+
+  @ApiProperty({ example: "[\"termId1\", \"termId2\"]", description: 'IDs dos termos que o usuário aceitou', required: false })
+  @IsOptional()
+  acceptedTermIds?: string[];
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, NotFoundException, Param, Patch, UseGuards } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Param, Patch, Query, UseGuards } from '@nestjs/common';
 import { UserTermAcceptanceService } from './user-term-acceptance.service';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -15,12 +15,13 @@ export class UserTermAcceptanceController {
     constructor(private readonly userTermAcceptanceService: UserTermAcceptanceService) { }
 
     @Get()
-    @ApiOperation({ summary: "Busca todas os termos que foram enviados para confirmação via email" })
-    async findAll() {
-        return this.userTermAcceptanceService.findAll();
+    @ApiOperation({ summary: "Busca os termos aceitos e reprovados por um usuário" })
+    async findAll(@Query('userId') userId: string) {
+        return this.userTermAcceptanceService.findAll({ userId });
     }
 
     @Patch(':id/revoke')
+     @ApiOperation({ summary: "Rota para revogar o consentimento a um termo específico" })
     async revokeConsent(@Param('id') id: string) {
       const result = await this.userTermAcceptanceService.revokeConsent(id);
       if (!result) throw new NotFoundException('Consentimento não encontrado');

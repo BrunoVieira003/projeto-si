@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Table, Tabs, Card, Tag } from 'antd';
+import { Table, Tabs, Card, Tag, Typography } from 'antd';
 import { getUserHistoryLogs, getTermHistoryLogs } from '../../services/history/historyService';
 
 const { TabPane } = Tabs;
+const { Title } = Typography;
 
 export default function HistoryPage() {
     const [userLogs, setUserLogs] = useState([]);
@@ -48,7 +49,7 @@ export default function HistoryPage() {
             },
         },
         {
-            title: 'Data',
+            title: 'Data e Horário',
             dataIndex: 'createdAt',
             key: 'createdAt',
             render: (value: string | null) =>
@@ -93,27 +94,30 @@ export default function HistoryPage() {
     ];
 
     return (
-        <Card title="Histórico do Sistema" style={{ margin: '2rem' }}>
-            <Tabs defaultActiveKey="1">
-                <TabPane tab="Usuários" key="1">
-                    <Table
-                        dataSource={userLogs}
-                        columns={columns}
-                        rowKey="id"
-                        loading={loading}
-                        pagination={{ pageSize: 5 }}
-                    />
-                </TabPane>
-                <TabPane tab="Termos" key="2">
-                    <Table
-                        dataSource={termLogs}
-                        columns={columns}
-                        rowKey="id"
-                        loading={loading}
-                        pagination={{ pageSize: 5 }}
-                    />
-                </TabPane>
-            </Tabs>
-        </Card>
+        <div>
+            <Card>
+                <Title level={3}>Histórico de Alterações</Title>
+                <Tabs defaultActiveKey="1">
+                    <TabPane tab="Usuários" key="1">
+                        <Table
+                            dataSource={userLogs}
+                            columns={columns}
+                            rowKey="id"
+                            loading={loading}
+                            pagination={{ pageSize: 5 }}
+                        />
+                    </TabPane>
+                    <TabPane tab="Termos" key="2">
+                        <Table
+                            dataSource={termLogs}
+                            columns={columns}
+                            rowKey="id"
+                            loading={loading}
+                            pagination={{ pageSize: 5 }}
+                        />
+                    </TabPane>
+                </Tabs>
+            </Card>
+        </div>
     );
 }

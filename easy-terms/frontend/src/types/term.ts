@@ -1,14 +1,11 @@
 export interface CreateTermPayload {
     title: string;
     content: string;
-    version: string;
-    isActive: boolean;
-}
-
-export interface UpdateTermPayload {
-    id: string;
-    title: string;
-    content: string;
-    version: string;
-    isActive: boolean;
+    revocable: boolean;
+    purpose: string;
+    createdBy: string;
+    role: 'ADMIN' | 'EMPLOYEE';
+    validFrom?: string; // formato ISO: 'YYYY-MM-DD'
+    validUntil?: string;
+    acceptanceRequired?: boolean;
 }

@@ -22,7 +22,7 @@ export class UserController {
   @ApiResponse({ status: 201, description: "Usuário criado com sucesso." })
   async createUser(
 
-    @Body() { name, email, role, acceptedTermIds }: CreateUserDTO,
+    @Body() { name, email, role, phoneNumber, birthDate, cpf, city, state, acceptedTermIds }: CreateUserDTO,
     @Body("password", HashPasswordPipe) hashedPassword: string,
   ) {
     const userCreated = await this.userService.createUser({
@@ -30,6 +30,11 @@ export class UserController {
       email: email,
       password: hashedPassword,
       role: role,
+      phoneNumber: phoneNumber,
+      birthDate: birthDate,
+      cpf: cpf,
+      city: city,
+      state: state,
       acceptedTermIds: acceptedTermIds,
     });
 
@@ -40,6 +45,11 @@ export class UserController {
         userCreated.name,
         userCreated.email,
         userCreated.role,
+        userCreated.phoneNumber,
+        userCreated.birthDate,
+        userCreated.cpf,
+        userCreated.city,
+        userCreated.state,
         userCreated.createdAt,
         userCreated.updatedAt,
       ),

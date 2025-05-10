@@ -1,48 +1,31 @@
 import { useEffect, useState } from 'react';
-import { Table, Form, Input, Switch, Button, Card, Tag } from 'antd';
-import { createTerm, getTerms, updateTerm, deleteTerm } from '../../services/term/termService';
-import { CreateTermPayload, UpdateTermPayload } from '../../types/term';
+import { Table, Form, Input, Button, Card, Tag, Modal, Select, Col, Row } from 'antd';
+import { createTerm, getTerms } from '../../services/term/termService';
+import { CreateTermPayload } from '../../types/term';
 import { SweetAlert } from '../../components/SweetAlert/SweetAlert';
-import { EditTermModal } from '../../components/EditTermModal/EditTermModal';
-import { Popconfirm } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { getUsers } from '../../services/user/userService';
+
+const { Option } = Select;
 
 export default function TermsPage() {
   const [form] = Form.useForm();
   const [terms, setTerms] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedTerm, setSelectedTerm] = useState<UpdateTermPayload>({} as UpdateTermPayload);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedContent, setSelectedContent] = useState<string>('');
 
-  const handleEdit = (term: any) => {
-    setSelectedTerm(term);
-    setEditModalOpen(true);
-  };
+  const [adminUsers, setAdminUsers] = useState([]);
 
-  const handleUpdateTerm = async (values: UpdateTermPayload) => {
-    SweetAlert.loading();
-    
+  const fetchUsers = async () => {
     try {
-      await updateTerm(selectedTerm.id, values); // ou `updateTerm` se tiver
-      SweetAlert.success('Atualizado com sucesso!', 'O termo foi atualizado.');
-      setEditModalOpen(false);
-      fetchTerms();
-    } catch {
-      SweetAlert.error('Erro ao atualizar termo', 'Tente novamente.');
+      const { data } = await getUsers();
+      const admins = data.users.filter((user: any) => user.role === 'ADMIN');
+      setAdminUsers(admins);
+    } catch (err) {
+      SweetAlert.error('Erro ao carregar usuários', 'Tente novamente mais tarde');
     }
   };
-
-  const handleDelete = async (id: string) => {
-    SweetAlert.loading();
-    try {
-      await deleteTerm(id);
-      SweetAlert.success('Termo excluído', 'O termo foi removido com sucesso.');
-      fetchTerms();
-    } catch {
-      SweetAlert.error('Erro ao excluir termo', 'Tente novamente.');
-    }
-  };  
 
   const fetchTerms = async () => {
     setLoading(true);
@@ -71,6 +54,7 @@ export default function TermsPage() {
 
   useEffect(() => {
     fetchTerms();
+    fetchUsers();
   }, []);
 
   const columns = [
@@ -80,9 +64,53 @@ export default function TermsPage() {
       key: 'title'
     },
     {
+      title: 'Conteúdo',
+      dataIndex: 'content',
+      key: 'content',
+      render: (content: string) => (
+        <div
+          onClick={() => {
+            setSelectedContent(content);
+            setViewModalOpen(true);
+          }}
+          style={{
+            maxWidth: 200,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            cursor: 'pointer',
+            color: '#1890ff'
+          }}
+        >
+          {'Ver conteúdo'}
+        </div>
+      )
+    },
+    {
       title: 'Versão',
       dataIndex: 'version',
       key: 'version'
+    },
+    {
+      title: 'Finalidade',
+      dataIndex: 'purpose',
+      key: 'purpose',
+    },
+    {
+      title: 'Revogável?',
+      dataIndex: 'revocable',
+      key: 'revocable',
+      render: (requiresOptIn: boolean) =>
+        requiresOptIn ? (
+          <Tag color="green">SIM</Tag>
+        ) : (
+          <Tag color="red">NÃO</Tag>
+        ),
+    },
+    {
+      title: 'Criado Por',
+      dataIndex: 'createdBy',
+      key: 'createdBy',
     },
     {
       title: 'Ativo',
@@ -102,104 +130,193 @@ export default function TermsPage() {
       render: (value: string) => new Date(value).toLocaleString('pt-BR'),
     },
     {
-      title: 'Data de Atualização',
-      dataIndex: 'updatedAt',
-      key: 'updatedAt',
-      render: (value: string) => new Date(value).toLocaleString('pt-BR'),
+      title: 'Perfil Associado',
+      dataIndex: 'appliesToRoles',
+      key: 'appliesToRoles',
+      render: (value: string | null | undefined) =>
+        value === 'ADMIN' ? (
+          <Tag color="green">Administrador</Tag>
+        ) : value === 'EMPLOYEE' ? (
+          <Tag color="blue">Funcionário</Tag>
+        ) : (
+          '-'
+        ),
     },
     {
-      title: 'Ações',
-      key: 'actions',
-      render: (_: any, record: any) => (
-        <div style={{ display: 'flex', gap: 12 }}>
-          <EditOutlined
-            style={{ color: '#1890ff', cursor: 'pointer' }}
-            onClick={() => handleEdit(record)}
-          />
-          <Popconfirm
-            title="Tem certeza que deseja excluir?"
-            okText="Sim"
-            cancelText="Não"
-            onConfirm={() => handleDelete(record.id)}
-          >
-            <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-          </Popconfirm>
-        </div>
-      )
-    }    
+      title: 'Data Inicial Validade',
+      dataIndex: 'validFrom',
+      key: 'validFrom',
+      render: (value: string) => value ? new Date(value).toLocaleDateString('pt-BR') : '-',
+    },
+    {
+      title: 'Data Final Validade',
+      dataIndex: 'validUntil',
+      key: 'validUntil',
+      render: (value: string) => value ? new Date(value).toLocaleDateString('pt-BR') : '-',
+    },
+    {
+      title: 'Aceite obrigatório?',
+      dataIndex: 'acceptanceRequired',
+      key: 'acceptanceRequired',
+      render: (value: boolean | null | undefined) =>
+        value === true ? (
+          <Tag color="green">SIM</Tag>
+        ) : value === false ? (
+          <Tag color="red">NÃO</Tag>
+        ) : (
+          '-'
+        )
+    },
   ];
 
   return (
-    <div style={{ maxWidth: '100%', padding: '20px' }}>
-      <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+    <div>
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: 24, marginBottom: 16 }}>Gerenciar Termos de Uso</h1>
+        <p style={{ fontSize: 16, marginBottom: 16 }}>
+          Aqui você pode cadastrar novos termos de uso e visualizar os já cadastrados.
+        </p>
+        <span>Observação: Ao criar um novo termo com um título já existente, o sistema automaticamente incrementa a versão do termo.</span>
+      </div>
+
+      <div>
         {/* Card do formulário */}
-        <Card
-          title="Cadastrar Novo Termo"
-          style={{ flex: 1, minWidth: 300 }}
-        >
+        <Card title="Cadastrar Novo Termo" style={{ flex: 1, minWidth: 300 }}>
           <Form form={form} onFinish={onSubmit} layout="vertical">
-            <Form.Item
-              label="Título"
-              name="title"
-              rules={[{ required: true, message: 'Por favor, insira o título.' }]}
-            >
-              <Input />
-            </Form.Item>
+            <Row gutter={16}>
 
-            <Form.Item
-              label="Conteúdo"
-              name="content"
-              rules={[{ required: true, message: 'Por favor, insira o conteúdo do termo.' }]}
-            >
-              <Input.TextArea rows={4} />
-            </Form.Item>
+              <Col xs={24} sm={24} md={8}>
+                <Form.Item
+                  label="Título"
+                  name="title"
+                  rules={[{ required: true, message: 'Por favor, insira o título.' }]}
+                >
+                  <Input placeholder="Insira um título para o termo" />
+                </Form.Item>
+              </Col>
 
-            <Form.Item
-              label="Versão"
-              name="version"
-              rules={[{ required: true, message: 'Por favor, insira a versão.' }]}
-            >
-              <Input />
-            </Form.Item>
+              <Col xs={24} sm={24} md={8}>
+                <Form.Item
+                  label="Conteúdo"
+                  name="content"
+                  rules={[{ required: true, message: 'Por favor, insira o conteúdo do termo.' }]}
+                >
+                  <Input placeholder='Insira um conteúdo para o termo' />
+                </Form.Item>
+              </Col>
 
-            <Form.Item
-              label="Ativo"
-              name="isActive"
-              valuePropName="checked"
-            >
-              <Switch />
-            </Form.Item>
+              <Col xs={24} sm={24} md={8}>
+                <Form.Item
+                  label="Finalidade"
+                  name="purpose"
+                  rules={[{ required: true, message: 'Por favor, informe a finalidade do termo.' }]}
+                >
+                  <Input placeholder="Ex: Consentimento para envio de comunicações" />
+                </Form.Item>
+              </Col>
 
-            <Form.Item>
-              <Button type="primary" htmlType="submit" style={{ background: '#001529' }}>
-                Salvar
-              </Button>
-            </Form.Item>
+              <Col xs={24} sm={24} md={8}>
+                <Form.Item
+                  label="Revogável?"
+                  name="revocable"
+                  rules={[{ required: true, message: 'Por favor, selecione se é revogável.' }]}
+                >
+                  <Select placeholder="Selecione uma opção">
+                    <Option value={true}>Sim</Option>
+                    <Option value={false}>Não</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+
+              <Col xs={24} sm={24} md={8}>
+                <Form.Item
+                  label="Criado por (administrador)"
+                  name="createdBy"
+                  rules={[{ required: true, message: 'Selecione o administrador responsável.' }]}
+                >
+                  <Select placeholder="Selecione um administrador">
+                    {adminUsers.map((user: any) => (
+                      <Option key={user.id} value={user.id}>
+                        {user.name} ({user.email})
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+
+              </Col>
+
+              <Col xs={24} sm={24} md={8}>
+                <Form.Item label="Aplica-se ao perfil (opcional)" name="appliesToRoles">
+                  <Select placeholder="Selecione um perfil (opcional)" allowClear>
+                    <Option value="ADMIN">Administrador</Option>
+                    <Option value="EMPLOYEE">Funcionário</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+
+              <Col xs={24} sm={24} md={8}>
+                <Form.Item label="Data inicial de validade (opcional)" name="validFrom">
+                  <Input type="date" />
+                </Form.Item>
+              </Col>
+
+              <Col xs={24} sm={24} md={8}>
+                <Form.Item label="Data final de validade (opcional)" name="validUntil">
+                  <Input type="date" />
+                </Form.Item>
+              </Col>
+
+              <Col xs={24} sm={24} md={8}>
+                <Form.Item label="Aceite obrigatório? (opcional)" name="acceptanceRequired">
+                  <Select placeholder="Selecione uma opção" allowClear>
+                    <Option value={true}>Sim</Option>
+                    <Option value={false}>Não</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+
+            </Row>
+
+            <Col xs={24} sm={24} md={8}>
+              <Form.Item>
+                <Button type="primary" htmlType="submit" style={{ background: '#001529' }}>
+                  Salvar
+                </Button>
+              </Form.Item>
+            </Col>
+
           </Form>
         </Card>
 
         {/* Card da Tabela */}
-        <Card
-          title="Termos Cadastrados"
-          style={{ flex: 2 }}
+        < div style={{ marginTop: 20 }
+        }>
+          <Card
+            title="Termos Cadastrados"
+            style={{ flex: 2 }}
+          >
+            <Table
+              columns={columns}
+              dataSource={terms}
+              rowKey="id"
+              loading={loading}
+              pagination={{ pageSize: 5 }}
+              scroll={{ x: 'max-content' }}
+            />
+          </Card>
+        </div >
+
+        <Modal
+          open={viewModalOpen}
+          onCancel={() => setViewModalOpen(false)}
+          footer={null}
+          title="Conteúdo do Termo"
+          width={800}
         >
-          <Table
-            columns={columns}
-            dataSource={terms}
-            rowKey="id"
-            loading={loading}
-            pagination={{ pageSize: 5 }}
-          />
-        </Card>
+          <div style={{ whiteSpace: 'pre-wrap' }}>{selectedContent}</div>
+        </Modal>
 
-        <EditTermModal
-          open={editModalOpen}
-          onClose={() => setEditModalOpen(false)}
-          onSubmit={handleUpdateTerm}
-          initialValues={selectedTerm || undefined}
-        />
-
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }  

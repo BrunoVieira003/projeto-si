@@ -22,11 +22,11 @@ export default function App() {
       {/* Rotas privadas (com Navbar e auth obrigatória) */}
       <Route element={<PrivateRoutes  allowedRoles={['ADMIN']}/>}>
         <Route path="/terms" element={<TermsPage />} />
-        <Route path="/users" element={<UserPage />} />
         <Route path="/history" element={<HistoryPage />} />
       </Route>
 
       <Route element={<PrivateRoutes  allowedRoles={['ADMIN', 'EMPLOYEE']}/>}>
+        <Route path="/users" element={<UserPage />} />
         <Route path="/termsAcceptance" element={<TermsAcceptancePage />} />
       </Route>
     </Routes>

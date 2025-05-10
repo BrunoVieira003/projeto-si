@@ -6,11 +6,13 @@ import Title from 'antd/es/typography/Title';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { EditUserModal } from '../../components/EditUserModal/EditUserModal';
 import { UpdateUserPayload } from '../../types/user';
+import { useAuth } from '../../context/AuthContext';
+import { ProtectedAction } from '../../components/ProtectedAction/ProtectedAction';
 
 export default function UserPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const { user } = useAuth();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UpdateUserPayload>({} as UpdateUserPayload);
 
@@ -23,7 +25,12 @@ export default function UserPage() {
     setLoading(true);
     try {
       const { data } = await getUsers();
-      setUsers(data.users);
+      const allUsers = data.users;
+      const filtered = user?.role === 'ADMIN'
+        ? allUsers
+        : allUsers.filter((u: any) => u.id === user?.id);
+
+      setUsers(filtered);
     } catch (err) {
       SweetAlert.error('Erro', 'Erro ao carregar usuários');
     } finally {
@@ -43,7 +50,7 @@ export default function UserPage() {
   };
 
   const handleEditSave = async (updatedUser: UpdateUserPayload) => {
-     SweetAlert.loading();
+    SweetAlert.loading();
     try {
       await updateUser(selectedUser.id, updatedUser);
       console.log('updatedUser', updatedUser);
@@ -53,7 +60,8 @@ export default function UserPage() {
 
       SweetAlert.success('Sucesso', 'Usuário atualizado');
       fetchUsers();
-    } catch {
+    } catch(error) {
+      console.log(error)
       SweetAlert.error('Erro', 'Erro ao atualizar usuário');
     }
   };
@@ -63,9 +71,21 @@ export default function UserPage() {
   }, []);
 
   const columns = [
-    { title: 'Nome', dataIndex: 'name', key: 'name' },
-    { title: 'E-mail', dataIndex: 'email', key: 'email' },
-    { title: 'Função', dataIndex: 'role', key: 'role' },
+    {
+      title: 'Nome',
+      dataIndex: 'name',
+      key: 'name'
+    },
+    {
+      title: 'E-mail',
+      dataIndex: 'email',
+      key: 'email'
+    },
+    {
+      title: 'Função',
+      dataIndex: 'role',
+      key: 'role'
+    },
     {
       title: 'Criado em',
       dataIndex: 'createdAt',
@@ -83,42 +103,67 @@ export default function UserPage() {
       key: 'actions',
       render: (_: any, record: any) => (
         <div style={{ display: 'flex', gap: 12 }}>
-          <EditOutlined
-            style={{ color: '#1890ff', cursor: 'pointer' }}
-            onClick={() => handleEdit(record)}
-          />
-          <Popconfirm
-            title="Tem certeza que deseja excluir?"
-            okText="Sim"
-            cancelText="Não"
-            onConfirm={() => handleDelete(record.id)}
-          >
-            <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-          </Popconfirm>
+
+          <ProtectedAction allowedRoles={['admin']} ownerId={record.id}>
+            <EditOutlined
+              style={{ color: '#1890ff', cursor: 'pointer' }}
+              onClick={() => handleEdit(record)}
+            />
+          </ProtectedAction>
+
+          <ProtectedAction allowedRoles={['admin']}>
+            <Popconfirm
+              title="Tem certeza que deseja excluir?"
+              okText="Sim"
+              cancelText="Não"
+              onConfirm={() => handleDelete(record.id)}
+            >
+              <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
+            </Popconfirm>
+          </ProtectedAction>
+
         </div>
       )
-    }    
+    }
   ];
 
   return (
-    <div style={{ maxWidth: 1400, margin: '0 auto', padding: '20px' }}>
+    <div>
       <Card>
-        <Title level={3}>Usuários Cadastrados no Sistema</Title>
+
+        {user?.role === 'ADMIN' && (
+          <div style={{ marginBottom: 20 }}>
+            <Title level={3} style={{ marginBottom: 20 }}>
+              Usuários Cadastrados no Sistema
+            </Title>
+            <span> Observação: Usuários Administradores podem visualizar todos os usuários cadastrados. Porém, podem editar apenas os próprios dados.</span>
+          </div>
+        )}
+        {user?.role === 'EMPLOYEE' && (
+          <div style={{ marginBottom: 20 }}>
+            <Title level={3} style={{ marginBottom: 20 }}>
+              Meus Dados
+            </Title>
+            <span> Observação: Usuários Funcionários podem visualizar e editar apenas os próprios dados.</span>
+          </div>
+        )}
+
         <Table
           columns={columns}
           dataSource={users}
           rowKey="id"
           loading={loading}
           pagination={{ pageSize: 5 }}
+          scroll={{ x: 'max-content' }}
         />
-      
-          <EditUserModal
-            open={editModalOpen}
-            onClose={() => setEditModalOpen(false)}
-            onSubmit={handleEditSave}
-            initialValues={selectedUser || undefined}
-          />
-        
+
+        <EditUserModal
+          open={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          onSubmit={handleEditSave}
+          initialValues={selectedUser}
+        />
+
       </Card>
     </div>
   );
