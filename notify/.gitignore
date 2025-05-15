@@ -1,0 +1,29 @@
+# Bytecode Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pastas do PyInstaller
+build/
+dist/
+*.spec
+
+# Arquivos executáveis gerados
+*.exe
+
+# Logs e arquivos temporários
+*.log
+*.tmp
+
+# Pasta de backups gerados
+backups/
+
+# Configurações locais que podem ter dados sensíveis
+config.py
+# ou, se usar .env
+.env
+
+# IDEs / Editores
+.vscode/
+.idea/
+*.swp
