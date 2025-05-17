@@ -53,4 +53,8 @@ export class CreateUserDTO {
   @ApiProperty({ example: "[\"termId1\", \"termId2\"]", description: 'IDs dos termos que o usuário aceitou', required: false })
   @IsOptional()
   acceptedTermIds?: string[];
+
+  @ApiProperty({ example: "[\"fieldTermId1\", \"fieldTermId2\"]", description: 'IDs dos campos opcionais dos termos que o usuário aceitou', required: false })
+  @IsOptional()
+  acceptedFieldIds?: string[];
 }

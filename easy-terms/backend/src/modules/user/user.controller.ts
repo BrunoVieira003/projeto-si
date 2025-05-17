@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Put, UseGuards} from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Put, UseGuards } from "@nestjs/common";
 import { ListUsersDTO } from "./dto/ListUser.dto";
 import { CreateUserDTO } from "./dto/CreateUser.dto";
 import { UserService } from "./user.service";
@@ -22,7 +22,7 @@ export class UserController {
   @ApiResponse({ status: 201, description: "Usuário criado com sucesso." })
   async createUser(
 
-    @Body() { name, email, role, phoneNumber, birthDate, cpf, city, state, acceptedTermIds }: CreateUserDTO,
+    @Body() { name, email, role, phoneNumber, birthDate, cpf, city, state, acceptedTermIds, acceptedFieldIds }: CreateUserDTO,
     @Body("password", HashPasswordPipe) hashedPassword: string,
   ) {
     const userCreated = await this.userService.createUser({
@@ -36,12 +36,13 @@ export class UserController {
       city: city,
       state: state,
       acceptedTermIds: acceptedTermIds,
+      acceptedFieldIds: acceptedFieldIds
     });
 
     return {
       message: "Usuário criado com sucesso",
       user: new ListUsersDTO(
-        userCreated.id, 
+        userCreated.id,
         userCreated.name,
         userCreated.email,
         userCreated.role,

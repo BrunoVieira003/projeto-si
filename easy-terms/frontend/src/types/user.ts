@@ -3,11 +3,11 @@ export interface CreateUserPayload {
   email: string;
   password: string;
   role: 'ADMIN' | 'EMPLOYEE';
-  acceptedTermIds?: string[];
-  
   // opcionais:
+  acceptedTermIds?: string[];
+  acceptedFieldIds?: string[];
   phoneNumber?: string;
-  birthDate?: string;       // formato ISO: 'yyyy-MM-dd'
+  birthDate?: string;       
   cpf?: string;
   city?: string;
   state?: string;
@@ -17,11 +17,11 @@ export interface CreateUserPayload {
 export interface UpdateUserPayload {
   id: string;                 
   name: string;               
-  phoneNumber?: string;       // opcional
-  birthDate?: string;         // opcional — melhor usar string (ISO) do que Date
-  cpf?: string;               // opcional
-  city?: string;              // opcional
-  state?: string;             // opcional
+  phoneNumber?: string;    
+  birthDate?: string;        
+  cpf?: string;              
+  city?: string;              
+  state?: string;           
 }
 
 export interface LoginPayload {

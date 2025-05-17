@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Table, Form, Input, Button, Card, Tag, Modal, Select, Col, Row } from 'antd';
+import {
+  Table, Form, Input, Button, Card, Tag, Modal, Select, Col, Row,
+} from 'antd';
 import { createTerm, getTerms } from '../../services/term/termService';
 import { CreateTermPayload } from '../../types/term';
 import { SweetAlert } from '../../components/SweetAlert/SweetAlert';
@@ -15,7 +17,10 @@ export default function TermsPage() {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedContent, setSelectedContent] = useState<string>('');
 
-  const [adminUsers, setAdminUsers] = useState([]);
+  const [customFieldsModalOpen, setCustomFieldsModalOpen] = useState(false);
+  const [selectedCustomFields, setSelectedCustomFields] = useState<any[]>([]);
+
+  const [, setAdminUsers] = useState([]);
 
   const fetchUsers = async () => {
     try {
@@ -42,7 +47,14 @@ export default function TermsPage() {
   const onSubmit = async (values: CreateTermPayload) => {
     SweetAlert.loading();
     try {
-      await createTerm(values);
+      const loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
+
+      const payload: CreateTermPayload = {
+        ...values,
+        createdBy: loggedUser?.id || "",
+      };
+
+      await createTerm(payload);
 
       SweetAlert.success('Sucesso!', 'Termo criado com sucesso!');
       form.resetFields();
@@ -104,6 +116,22 @@ export default function TermsPage() {
       key: 'createdBy',
     },
     {
+      title: 'Campos Opcionais',
+      dataIndex: 'customFields',
+      key: 'customFields',
+      render: (fields: any[]) =>
+        fields && fields.length > 0 ? (
+          <Button type="link" onClick={() => {
+            setSelectedCustomFields(fields);
+            setCustomFieldsModalOpen(true);
+          }}>
+            Visualizar ({fields.length})
+          </Button>
+        ) : (
+          <Tag color="default">Nenhum</Tag>
+        ),
+    },
+    {
       title: 'Ativo',
       dataIndex: 'isActive',
       key: 'isActive',
@@ -156,22 +184,6 @@ export default function TermsPage() {
                   <Input placeholder='Insira um conteúdo para o termo' />
                 </Form.Item>
               </Col>
-
-              <Col xs={24} sm={24} md={8}>
-                <Form.Item
-                  label="Criado por (administrador)"
-                  name="createdBy"
-                  rules={[{ required: true, message: 'Selecione o administrador responsável.' }]}
-                >
-                  <Select placeholder="Selecione um administrador">
-                    {adminUsers.map((user: any) => (
-                      <Option key={user.id} value={user.id}>
-                        {user.name} ({user.email})
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
             </Row>
 
             {/* Campos personalizados */}
@@ -197,8 +209,8 @@ export default function TermsPage() {
                           <Col xs={24} sm={10}>
                             <Form.Item
                               {...restField}
-                              name={[name, 'content']}
-                              rules={[{ required: true, message: 'Conteúdo obrigatório' }]}
+                              name={[name, 'value']}
+                              rules={[{ required: true, message: 'Valor obrigatório' }]}
                             >
                               <Input placeholder="Valor" />
                             </Form.Item>
@@ -235,16 +247,11 @@ export default function TermsPage() {
               </Form.Item>
             </Col>
           </Form>
-
         </Card>
 
         {/* Card da Tabela */}
-        < div style={{ marginTop: 20 }
-        }>
-          <Card
-            title="Termos Cadastrados"
-            style={{ flex: 2 }}
-          >
+        <div style={{ marginTop: 20 }}>
+          <Card title="Termos Cadastrados" style={{ flex: 2 }}>
             <Table
               columns={columns}
               dataSource={terms}
@@ -254,8 +261,9 @@ export default function TermsPage() {
               scroll={{ x: 'max-content' }}
             />
           </Card>
-        </div >
+        </div>
 
+        {/* Modal de conteúdo */}
         <Modal
           open={viewModalOpen}
           onCancel={() => setViewModalOpen(false)}
@@ -266,7 +274,27 @@ export default function TermsPage() {
           <div style={{ whiteSpace: 'pre-wrap' }}>{selectedContent}</div>
         </Modal>
 
-      </div >
-    </div >
+        {/* Modal de campos personalizados */}
+        <Modal
+          open={customFieldsModalOpen}
+          onCancel={() => setCustomFieldsModalOpen(false)}
+          footer={null}
+          title="Campos Personalizados"
+          width={600}
+        >
+          {selectedCustomFields.length === 0 ? (
+            <p>Nenhum campo personalizado definido.</p>
+          ) : (
+            <ul>
+              {selectedCustomFields.map((field, index) => (
+                <li key={index}>
+                  <strong>{field.name}</strong> ({field.type}): {field.value}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Modal>
+      </div>
+    </div>
   );
-}  
+}
