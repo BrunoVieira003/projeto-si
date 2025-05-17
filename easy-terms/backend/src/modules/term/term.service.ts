@@ -17,6 +17,9 @@ export class TermService {
   ) { }
 
   async createTerm(data: CreateTermDTO) {
+
+    const { title, content, createdBy, customFields } = data;
+
     // Busca o último termo com o mesmo título para obter a maior versão
     const lastTerm = await this.termRepository.findOne({
       where: { title: data.title },
@@ -27,9 +30,12 @@ export class TermService {
 
     // Cria nova instância com a próxima versão
     const termEntity = this.termRepository.create({
-      ...data,
+      title,
+      content,
+      createdBy,
       version: nextVersion,
       isActive: true,
+      customFields
     });
 
     const termCreated = await this.termRepository.save(termEntity);
@@ -53,16 +59,11 @@ export class TermService {
           term.id.toString(),
           term.title,
           term.content,
-          term.version,
-          term.createdAt,
-          term.isActive,
-          term.revocable,
-          term.purpose,
           term.createdBy,
-          term.appliesToRoles ?? null,
-          term.validFrom ?? null,
-          term.validUntil ?? null,
-          term.acceptanceRequired ?? null,
+          term.version,
+          term.isActive,
+          term.createdAt,
+          term.customFields || []
         )
     );
 

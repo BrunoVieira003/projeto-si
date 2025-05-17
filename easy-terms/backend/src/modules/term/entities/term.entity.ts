@@ -1,7 +1,7 @@
 import { ApiTags } from "@nestjs/swagger";
 import { UserTermAcceptanceEntity } from "src/modules/acceptance/entities/user-term-acceptance.entity";
-import { Role } from "src/modules/user/enums/role.enum";
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from "typeorm";
+import { TermCustomFieldEntity } from "./term-custom-field.entity";
 
 @ApiTags("terms")
 @Entity({ name: "terms" })
@@ -15,26 +15,8 @@ export class TermEntity {
   @Column("text")
   content: string;
 
-  @Column({ default: true })
-  revocable: boolean
-
   @Column("text")
-  purpose: string;
-
-  @Column("text")
-  createdBy: string; 
-
-  @Column({ nullable: true })
-  appliesToRoles: Role
-  
-  @Column({ nullable: true })
-  validFrom: Date;
-
-  @Column({ nullable: true })
-  validUntil: Date;
-
-  @Column({ nullable: true})
-  acceptanceRequired: boolean;
+  createdBy: string;
 
   @Column({ type: 'int' })
   version: number;
@@ -47,4 +29,7 @@ export class TermEntity {
 
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;
+
+  @OneToMany(() => TermCustomFieldEntity, (field) => field.term, { cascade: true, eager: true })
+  customFields: TermCustomFieldEntity[];
 }

@@ -12,19 +12,19 @@ import { Role } from '../user/enums/role.enum';
 @ApiTags("user-term-acceptance")
 @ApiBearerAuth()
 export class UserTermAcceptanceController {
-    constructor(private readonly userTermAcceptanceService: UserTermAcceptanceService) { }
+  constructor(private readonly userTermAcceptanceService: UserTermAcceptanceService) { }
 
-    @Get()
-    @ApiOperation({ summary: "Busca os termos aceitos e reprovados por um usuário" })
-    async findAll(@Query('userId') userId: string) {
-        return this.userTermAcceptanceService.findAll({ userId });
-    }
+  @Get()
+  @ApiOperation({ summary: "Busca os termos aceitos e reprovados por um usuário" })
+  async findAll(@Query('userId') userId: string) {
+    return this.userTermAcceptanceService.findAll({ userId });
+  }
 
-    @Patch(':id/revoke')
-     @ApiOperation({ summary: "Rota para revogar o consentimento a um termo específico" })
-    async revokeConsent(@Param('id') id: string) {
-      const result = await this.userTermAcceptanceService.revokeConsent(id);
-      if (!result) throw new NotFoundException('Consentimento não encontrado');
-      return { message: 'Consentimento revogado com sucesso' };
-    }
+  @Patch(':id/revoke')
+  @ApiOperation({ summary: "Rota para revogar o consentimento a um termo específico" })
+  async revokeConsent(@Param('id') id: string) {
+    const result = await this.userTermAcceptanceService.revokeConsent(id);
+    if (!result) throw new NotFoundException('Consentimento não encontrado');
+    return { message: 'Consentimento revogado com sucesso' };
+  }
 }

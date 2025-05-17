@@ -28,16 +28,11 @@ export class TermController {
         termCreated.id.toString(),
         termCreated.title,
         termCreated.content,
-        termCreated.version, // gerado automaticamente pela service
-        termCreated.createdAt,
-        termCreated.isActive, // também definido internamente
-        termCreated.revocable,
-        termCreated.purpose,
         termCreated.createdBy,
-        termCreated.appliesToRoles ?? null,
-        termCreated.validFrom ?? null,
-        termCreated.validUntil ?? null,
-        termCreated.acceptanceRequired ?? null,
+        termCreated.version, // gerado automaticamente pela service
+        termCreated.isActive, // também definido internamente
+        termCreated.createdAt,
+        termCreated.customFields || [],
       )
     };
   }
