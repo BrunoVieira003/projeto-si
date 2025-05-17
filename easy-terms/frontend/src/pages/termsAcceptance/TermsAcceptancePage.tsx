@@ -117,6 +117,7 @@ export default function TermsAcceptancePage() {
             type="default"
             size="small"
             onClick={() => openFieldModal(record)}
+            disabled={record.revokedAt}
           >
             Ver campos
           </Button>
@@ -157,7 +158,6 @@ export default function TermsAcceptancePage() {
           userName={selectedLog?.user?.name || ''}
           termTitle={selectedLog?.term?.title || ''}
         />
-
 
         <OptionalFieldsModal
           open={fieldModalOpen}

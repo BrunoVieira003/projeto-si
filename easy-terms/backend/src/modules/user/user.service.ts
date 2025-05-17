@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { UserEntity } from "./entities/user.entity";
 import { CreateUserDTO } from "./dto/CreateUser.dto";
 import { ListUsersDTO } from "./dto/ListUser.dto";
@@ -61,7 +61,10 @@ export class UserService {
 
     // 2. Criação dos campos opcionais aceitos
     if (Array.isArray(data.acceptedFieldIds) && data.acceptedFieldIds.length > 0) {
-      const customFields = await this.termCustomFieldRepository.findByIds(data.acceptedFieldIds);
+      const customFields = await this.termCustomFieldRepository.find({
+        where: { id: In(data.acceptedFieldIds) },
+        relations: ['term'],
+      });
 
       // Recarrega os aceites com os termos relacionados para mapear corretamente
       const refreshedAcceptances = await this.userTermAcceptanceRepository.find({

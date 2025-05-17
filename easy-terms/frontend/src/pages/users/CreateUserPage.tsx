@@ -161,13 +161,6 @@ export default function CreateUserPage() {
             >
                 {selectedTerm && (
                     <>
-                        <p><strong>Finalidade:</strong> {selectedTerm.purpose}</p>
-                        <p><strong>Revogável:</strong> {selectedTerm.revocable ? 'Sim' : 'Não'}</p>
-                        <p><strong>Requer opt-in:</strong> {selectedTerm.requiresOptIn ? 'Sim' : 'Não'}</p>
-                        <p><strong>Aceite obrigatório:</strong> {selectedTerm.acceptanceRequired ? 'Sim' : 'Não'}</p>
-                        <p><strong>Válido de:</strong> {selectedTerm.validFrom ? new Date(selectedTerm.validFrom).toLocaleDateString('pt-BR') : '-'}</p>
-                        <p><strong>Válido até:</strong> {selectedTerm.validUntil ? new Date(selectedTerm.validUntil).toLocaleDateString('pt-BR') : '-'}</p>
-
                         <div style={{ borderTop: '1px solid #ccc', paddingTop: 12 }}>
                             <p><strong>Conteúdo:</strong></p>
                             <p>{selectedTerm.content}</p>
