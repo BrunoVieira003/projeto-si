@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Table, Form, Input, Button, Card, Tag, Modal, Select, Col, Row } from 'antd';
+import {
+  Table, Form, Input, Button, Card, Tag, Modal, Select, Col, Row,
+  Divider,
+} from 'antd';
 import { createTerm, getTerms } from '../../services/term/termService';
 import { CreateTermPayload } from '../../types/term';
 import { SweetAlert } from '../../components/SweetAlert/SweetAlert';
 import { getUsers } from '../../services/user/userService';
+import { DeleteOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
 
@@ -15,7 +19,10 @@ export default function TermsPage() {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedContent, setSelectedContent] = useState<string>('');
 
-  const [adminUsers, setAdminUsers] = useState([]);
+  const [customFieldsModalOpen, setCustomFieldsModalOpen] = useState(false);
+  const [selectedCustomFields, setSelectedCustomFields] = useState<any[]>([]);
+
+  const [, setAdminUsers] = useState([]);
 
   const fetchUsers = async () => {
     try {
@@ -42,7 +49,14 @@ export default function TermsPage() {
   const onSubmit = async (values: CreateTermPayload) => {
     SweetAlert.loading();
     try {
-      await createTerm(values);
+      const loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
+
+      const payload: CreateTermPayload = {
+        ...values,
+        createdBy: loggedUser?.id || "",
+      };
+
+      await createTerm(payload);
 
       SweetAlert.success('Sucesso!', 'Termo criado com sucesso!');
       form.resetFields();
@@ -56,6 +70,13 @@ export default function TermsPage() {
     fetchTerms();
     fetchUsers();
   }, []);
+
+  const fieldTypes = [
+    { label: 'Texto', value: 'string' },
+    { label: 'Número', value: 'number' },
+    { label: 'Booleano', value: 'boolean' },
+    { label: 'Data', value: 'date' }
+  ];
 
   const columns = [
     {
@@ -92,25 +113,25 @@ export default function TermsPage() {
       key: 'version'
     },
     {
-      title: 'Finalidade',
-      dataIndex: 'purpose',
-      key: 'purpose',
-    },
-    {
-      title: 'Revogável?',
-      dataIndex: 'revocable',
-      key: 'revocable',
-      render: (requiresOptIn: boolean) =>
-        requiresOptIn ? (
-          <Tag color="green">SIM</Tag>
-        ) : (
-          <Tag color="red">NÃO</Tag>
-        ),
-    },
-    {
       title: 'Criado Por',
       dataIndex: 'createdBy',
       key: 'createdBy',
+    },
+    {
+      title: 'Campos Opcionais',
+      dataIndex: 'customFields',
+      key: 'customFields',
+      render: (fields: any[]) =>
+        fields && fields.length > 0 ? (
+          <Button type="link" onClick={() => {
+            setSelectedCustomFields(fields);
+            setCustomFieldsModalOpen(true);
+          }}>
+            Visualizar ({fields.length})
+          </Button>
+        ) : (
+          <Tag color="default">Nenhum</Tag>
+        ),
     },
     {
       title: 'Ativo',
@@ -129,44 +150,6 @@ export default function TermsPage() {
       key: 'createdAt',
       render: (value: string) => new Date(value).toLocaleString('pt-BR'),
     },
-    {
-      title: 'Perfil Associado',
-      dataIndex: 'appliesToRoles',
-      key: 'appliesToRoles',
-      render: (value: string | null | undefined) =>
-        value === 'ADMIN' ? (
-          <Tag color="green">Administrador</Tag>
-        ) : value === 'EMPLOYEE' ? (
-          <Tag color="blue">Funcionário</Tag>
-        ) : (
-          '-'
-        ),
-    },
-    {
-      title: 'Data Inicial Validade',
-      dataIndex: 'validFrom',
-      key: 'validFrom',
-      render: (value: string) => value ? new Date(value).toLocaleDateString('pt-BR') : '-',
-    },
-    {
-      title: 'Data Final Validade',
-      dataIndex: 'validUntil',
-      key: 'validUntil',
-      render: (value: string) => value ? new Date(value).toLocaleDateString('pt-BR') : '-',
-    },
-    {
-      title: 'Aceite obrigatório?',
-      dataIndex: 'acceptanceRequired',
-      key: 'acceptanceRequired',
-      render: (value: boolean | null | undefined) =>
-        value === true ? (
-          <Tag color="green">SIM</Tag>
-        ) : value === false ? (
-          <Tag color="red">NÃO</Tag>
-        ) : (
-          '-'
-        )
-    },
   ];
 
   return (
@@ -181,11 +164,10 @@ export default function TermsPage() {
 
       <div>
         {/* Card do formulário */}
-        <Card title="Cadastrar Novo Termo" style={{ flex: 1, minWidth: 300 }}>
+        <Card title="Cadastrar Novo Termo" style={{ flex: 1, width: 700 }}>
           <Form form={form} onFinish={onSubmit} layout="vertical">
             <Row gutter={16}>
-
-              <Col xs={24} sm={24} md={8}>
+              <Col xs={24} sm={12}>
                 <Form.Item
                   label="Título"
                   name="title"
@@ -195,106 +177,102 @@ export default function TermsPage() {
                 </Form.Item>
               </Col>
 
-              <Col xs={24} sm={24} md={8}>
+              <Col xs={24}>
                 <Form.Item
                   label="Conteúdo"
                   name="content"
                   rules={[{ required: true, message: 'Por favor, insira o conteúdo do termo.' }]}
                 >
-                  <Input placeholder='Insira um conteúdo para o termo' />
+                  <Input.TextArea
+                    rows={6}
+                    placeholder="Descreva aqui o conteúdo detalhado do termo"
+                    style={{ resize: 'vertical' }}
+                  />
                 </Form.Item>
               </Col>
-
-              <Col xs={24} sm={24} md={8}>
-                <Form.Item
-                  label="Finalidade"
-                  name="purpose"
-                  rules={[{ required: true, message: 'Por favor, informe a finalidade do termo.' }]}
-                >
-                  <Input placeholder="Ex: Consentimento para envio de comunicações" />
-                </Form.Item>
-              </Col>
-
-              <Col xs={24} sm={24} md={8}>
-                <Form.Item
-                  label="Revogável?"
-                  name="revocable"
-                  rules={[{ required: true, message: 'Por favor, selecione se é revogável.' }]}
-                >
-                  <Select placeholder="Selecione uma opção">
-                    <Option value={true}>Sim</Option>
-                    <Option value={false}>Não</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-
-              <Col xs={24} sm={24} md={8}>
-                <Form.Item
-                  label="Criado por (administrador)"
-                  name="createdBy"
-                  rules={[{ required: true, message: 'Selecione o administrador responsável.' }]}
-                >
-                  <Select placeholder="Selecione um administrador">
-                    {adminUsers.map((user: any) => (
-                      <Option key={user.id} value={user.id}>
-                        {user.name} ({user.email})
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-
-              </Col>
-
-              <Col xs={24} sm={24} md={8}>
-                <Form.Item label="Aplica-se ao perfil (opcional)" name="appliesToRoles">
-                  <Select placeholder="Selecione um perfil (opcional)" allowClear>
-                    <Option value="ADMIN">Administrador</Option>
-                    <Option value="EMPLOYEE">Funcionário</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-
-              <Col xs={24} sm={24} md={8}>
-                <Form.Item label="Data inicial de validade (opcional)" name="validFrom">
-                  <Input type="date" />
-                </Form.Item>
-              </Col>
-
-              <Col xs={24} sm={24} md={8}>
-                <Form.Item label="Data final de validade (opcional)" name="validUntil">
-                  <Input type="date" />
-                </Form.Item>
-              </Col>
-
-              <Col xs={24} sm={24} md={8}>
-                <Form.Item label="Aceite obrigatório? (opcional)" name="acceptanceRequired">
-                  <Select placeholder="Selecione uma opção" allowClear>
-                    <Option value={true}>Sim</Option>
-                    <Option value={false}>Não</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-
             </Row>
 
-            <Col xs={24} sm={24} md={8}>
-              <Form.Item>
-                <Button type="primary" htmlType="submit" style={{ background: '#001529' }}>
-                  Salvar
-                </Button>
-              </Form.Item>
-            </Col>
+            <Divider orientation="left">Campos Opcionais</Divider>
+            <Form.List name="customFields">
+              {(fields, { add, remove }) => (
+                <>
+                  {fields.map(({ key, name, ...restField }) => (
+                    <Row
+                      key={key}
+                      gutter={12}
+                      align="middle"
+                      style={{ marginBottom: 8 }}
+                    >
+                      <Col xs={24} sm={6}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'name']}
+                          rules={[{ required: true, message: 'Nome obrigatório' }]}
+                        >
+                          <Input placeholder="Nome do campo" />
+                        </Form.Item>
+                      </Col>
 
+                      <Col xs={24} sm={10}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'value']}
+                          rules={[{ required: true, message: 'Valor obrigatório' }]}
+                        >
+                          <Input placeholder="Valor do campo" />
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} sm={6}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'type']}
+                          rules={[{ required: true, message: 'Tipo obrigatório' }]}
+                        >
+                          <Select placeholder="Tipo do campo">
+                            {fieldTypes.map((ft) => (
+                              <Option key={ft.value} value={ft.value}>
+                                {ft.label}
+                              </Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} sm={2}>
+                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '25px' }}>
+                          <Button
+                            type="text"
+                            danger
+                            icon={<DeleteOutlined />}
+                            onClick={() => remove(name)}
+                          />
+                        </div>
+                      </Col>
+                    </Row>
+                  ))}
+
+                  <Form.Item>
+                    <Button type="dashed" onClick={() => add()} block>
+                      + Adicionar campo opcional
+                    </Button>
+                  </Form.Item>
+                </>
+              )}
+            </Form.List>
+
+            <Form.Item style={{ marginTop: 24 }}>
+              <Button type="primary" htmlType="submit" style={{ background: '#001529' }}>
+                Salvar
+              </Button>
+            </Form.Item>
           </Form>
         </Card>
 
+
         {/* Card da Tabela */}
-        < div style={{ marginTop: 20 }
-        }>
-          <Card
-            title="Termos Cadastrados"
-            style={{ flex: 2 }}
-          >
+        <div style={{ marginTop: 20 }}>
+          <Card title="Termos Cadastrados" style={{ flex: 2 }}>
             <Table
               columns={columns}
               dataSource={terms}
@@ -304,8 +282,9 @@ export default function TermsPage() {
               scroll={{ x: 'max-content' }}
             />
           </Card>
-        </div >
+        </div>
 
+        {/* Modal de conteúdo */}
         <Modal
           open={viewModalOpen}
           onCancel={() => setViewModalOpen(false)}
@@ -316,7 +295,27 @@ export default function TermsPage() {
           <div style={{ whiteSpace: 'pre-wrap' }}>{selectedContent}</div>
         </Modal>
 
-      </div >
-    </div >
+        {/* Modal de campos personalizados */}
+        <Modal
+          open={customFieldsModalOpen}
+          onCancel={() => setCustomFieldsModalOpen(false)}
+          footer={null}
+          title="Campos Personalizados"
+          width={600}
+        >
+          {selectedCustomFields.length === 0 ? (
+            <p>Nenhum campo personalizado definido.</p>
+          ) : (
+            <ul>
+              {selectedCustomFields.map((field, index) => (
+                <li key={index}>
+                  <strong>{field.name}</strong> ({field.type}): {field.value}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Modal>
+      </div>
+    </div>
   );
-}  
+}

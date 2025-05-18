@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { UserEntity } from "./entities/user.entity";
 import { CreateUserDTO } from "./dto/CreateUser.dto";
 import { ListUsersDTO } from "./dto/ListUser.dto";
@@ -10,6 +10,8 @@ import { HistoryService } from "../history/history.service";
 import { HistoryEntity } from "../history/enums/history-entity.enum";
 import { UserTermAcceptanceEntity } from "../acceptance/entities/user-term-acceptance.entity";
 import { TermEntity } from "../term/entities/term.entity";
+import { TermCustomFieldEntity } from "../term/entities/term-custom-field.entity";
+import { UserAcceptedCustomFieldEntity } from "../acceptance/entities/user-accepted-custom-fields.entity";
 
 @Injectable()
 export class UserService {
@@ -23,6 +25,12 @@ export class UserService {
 
     @InjectRepository(TermEntity)
     private readonly termRepository: Repository<TermEntity>,
+
+    @InjectRepository(TermCustomFieldEntity)
+    private readonly termCustomFieldRepository: Repository<TermCustomFieldEntity>,
+
+    @InjectRepository(UserAcceptedCustomFieldEntity)
+    private readonly userAcceptedCustomFieldRepository: Repository<UserAcceptedCustomFieldEntity>
   ) { }
 
   async createUser(data: CreateUserDTO) {
@@ -36,18 +44,51 @@ export class UserService {
       createdUser,
     );
 
+    // 1. Criação dos aceites de termos
     if (Array.isArray(data.acceptedTermIds) && data.acceptedTermIds.length > 0) {
       const termEntities = await this.termRepository.findByIds(data.acceptedTermIds);
 
-      const acceptances = termEntities.map((term) => {
-        const acceptance = new UserTermAcceptanceEntity();
-        acceptance.userId = createdUser.id;
-        acceptance.termId = term.id;
-        acceptance.acceptedAt = new Date();
-        return acceptance;
+      const acceptancesToSave = termEntities.map((term) =>
+        this.userTermAcceptanceRepository.create({
+          userId: createdUser.id,
+          termId: term.id,
+          acceptedAt: new Date(),
+        })
+      );
+
+      await this.userTermAcceptanceRepository.save(acceptancesToSave);
+    }
+
+    // 2. Criação dos campos opcionais aceitos
+    if (Array.isArray(data.acceptedFieldIds) && data.acceptedFieldIds.length > 0) {
+      const customFields = await this.termCustomFieldRepository.find({
+        where: { id: In(data.acceptedFieldIds) },
+        relations: ['term'],
       });
 
-      await this.userTermAcceptanceRepository.save(acceptances);
+      // Recarrega os aceites com os termos relacionados para mapear corretamente
+      const refreshedAcceptances = await this.userTermAcceptanceRepository.find({
+        where: { userId: createdUser.id },
+        relations: ['term'],
+      });
+
+      const fieldAcceptances = customFields
+        .map((field) => {
+          const relatedAcceptance = refreshedAcceptances.find(
+            (acc) => acc.term?.id === field.term?.id
+          );
+          if (!relatedAcceptance) return null;
+
+          return this.userAcceptedCustomFieldRepository.create({
+            userTermAcceptance: relatedAcceptance,
+            customField: field,
+            accepted: true,
+            acceptedAt: new Date(),
+          });
+        })
+        .filter((item): item is UserAcceptedCustomFieldEntity => item !== null);
+
+      await this.userAcceptedCustomFieldRepository.save(fieldAcceptances);
     }
 
     return createdUser;

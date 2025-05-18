@@ -78,6 +78,18 @@ export default function HistoryPage() {
                             <div><strong>Título:</strong> {data.title}</div>
                             <div><strong>Versão:</strong> {data.version}</div>
                             <div><strong>Conteúdo:</strong> {data.content}</div>
+                            <div><strong>Itens Opcionais:</strong></div>
+                            <ul style={{ paddingLeft: 20 }}>
+                                {Array.isArray(data.customFields) && data.customFields.length > 0 ? (
+                                    data.customFields.map((field: any) => (
+                                        <li key={field.id}>
+                                            <strong>{field.name}</strong> ({field.type}): {field.value}
+                                        </li>
+                                    ))
+                                ) : (
+                                    <li>Nenhum campo opcional definido.</li>
+                                )}
+                            </ul>
                         </div>
                     );
                 }
