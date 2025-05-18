@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import {
   Table, Form, Input, Button, Card, Tag, Modal, Select, Col, Row,
+  Divider,
 } from 'antd';
 import { createTerm, getTerms } from '../../services/term/termService';
 import { CreateTermPayload } from '../../types/term';
 import { SweetAlert } from '../../components/SweetAlert/SweetAlert';
 import { getUsers } from '../../services/user/userService';
+import { DeleteOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
 
@@ -162,10 +164,10 @@ export default function TermsPage() {
 
       <div>
         {/* Card do formulário */}
-        <Card title="Cadastrar Novo Termo" style={{ flex: 1, minWidth: 300 }}>
+        <Card title="Cadastrar Novo Termo" style={{ flex: 1, width: 700 }}>
           <Form form={form} onFinish={onSubmit} layout="vertical">
             <Row gutter={16}>
-              <Col xs={24} sm={24} md={8}>
+              <Col xs={24} sm={12}>
                 <Form.Item
                   label="Título"
                   name="title"
@@ -175,79 +177,98 @@ export default function TermsPage() {
                 </Form.Item>
               </Col>
 
-              <Col xs={24} sm={24} md={8}>
+              <Col xs={24}>
                 <Form.Item
                   label="Conteúdo"
                   name="content"
                   rules={[{ required: true, message: 'Por favor, insira o conteúdo do termo.' }]}
                 >
-                  <Input placeholder='Insira um conteúdo para o termo' />
+                  <Input.TextArea
+                    rows={6}
+                    placeholder="Descreva aqui o conteúdo detalhado do termo"
+                    style={{ resize: 'vertical' }}
+                  />
                 </Form.Item>
               </Col>
             </Row>
 
-            {/* Campos personalizados */}
-            <Row>
-              <Col span={24}>
-                <Form.List name="customFields">
-                  {(fields, { add, remove }) => (
-                    <>
-                      <div style={{ marginBottom: 8 }}>
-                        <Button onClick={() => add()} type="dashed">+ Adicionar campo opcional</Button>
-                      </div>
-                      {fields.map(({ key, name, ...restField }) => (
-                        <Row key={key} gutter={16} align="middle">
-                          <Col xs={24} sm={6}>
-                            <Form.Item
-                              {...restField}
-                              name={[name, 'name']}
-                              rules={[{ required: true, message: 'Nome obrigatório' }]}
-                            >
-                              <Input placeholder="Nome do campo" />
-                            </Form.Item>
-                          </Col>
-                          <Col xs={24} sm={10}>
-                            <Form.Item
-                              {...restField}
-                              name={[name, 'value']}
-                              rules={[{ required: true, message: 'Valor obrigatório' }]}
-                            >
-                              <Input placeholder="Valor" />
-                            </Form.Item>
-                          </Col>
-                          <Col xs={24} sm={6}>
-                            <Form.Item
-                              {...restField}
-                              name={[name, 'type']}
-                              rules={[{ required: true, message: 'Tipo obrigatório' }]}
-                            >
-                              <Select placeholder="Tipo do campo">
-                                {fieldTypes.map(ft => (
-                                  <Option key={ft.value} value={ft.value}>{ft.label}</Option>
-                                ))}
-                              </Select>
-                            </Form.Item>
-                          </Col>
-                          <Col xs={24} sm={2}>
-                            <Button danger onClick={() => remove(name)}>Remover</Button>
-                          </Col>
-                        </Row>
-                      ))}
-                    </>
-                  )}
-                </Form.List>
-              </Col>
-            </Row>
+            <Divider orientation="left">Campos Opcionais</Divider>
+            <Form.List name="customFields">
+              {(fields, { add, remove }) => (
+                <>
+                  {fields.map(({ key, name, ...restField }) => (
+                    <Row
+                      key={key}
+                      gutter={12}
+                      align="middle"
+                      style={{ marginBottom: 8 }}
+                    >
+                      <Col xs={24} sm={6}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'name']}
+                          rules={[{ required: true, message: 'Nome obrigatório' }]}
+                        >
+                          <Input placeholder="Nome do campo" />
+                        </Form.Item>
+                      </Col>
 
-            <Col xs={24} style={{ marginTop: 24 }}>
-              <Form.Item>
-                <Button type="primary" htmlType="submit" style={{ background: '#001529' }}>
-                  Salvar
-                </Button>
-              </Form.Item>
-            </Col>
+                      <Col xs={24} sm={10}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'value']}
+                          rules={[{ required: true, message: 'Valor obrigatório' }]}
+                        >
+                          <Input placeholder="Valor do campo" />
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} sm={6}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'type']}
+                          rules={[{ required: true, message: 'Tipo obrigatório' }]}
+                        >
+                          <Select placeholder="Tipo do campo">
+                            {fieldTypes.map((ft) => (
+                              <Option key={ft.value} value={ft.value}>
+                                {ft.label}
+                              </Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} sm={2}>
+                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '25px' }}>
+                          <Button
+                            type="text"
+                            danger
+                            icon={<DeleteOutlined />}
+                            onClick={() => remove(name)}
+                          />
+                        </div>
+                      </Col>
+                    </Row>
+                  ))}
+
+                  <Form.Item>
+                    <Button type="dashed" onClick={() => add()} block>
+                      + Adicionar campo opcional
+                    </Button>
+                  </Form.Item>
+                </>
+              )}
+            </Form.List>
+
+            <Form.Item style={{ marginTop: 24 }}>
+              <Button type="primary" htmlType="submit" style={{ background: '#001529' }}>
+                Salvar
+              </Button>
+            </Form.Item>
           </Form>
         </Card>
+
 
         {/* Card da Tabela */}
         <div style={{ marginTop: 20 }}>

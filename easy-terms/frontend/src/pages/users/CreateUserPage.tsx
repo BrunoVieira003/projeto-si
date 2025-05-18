@@ -47,7 +47,6 @@ export default function CreateUserPage() {
     const [selectedTerm, setSelectedTerm] = useState<Term | null>(null);
     const [acceptedIds, setAcceptedIds] = useState<string[]>([]);
     const [acceptedFieldMap, setAcceptedFieldMap] = useState<Record<string, string[]>>({});
-    const [selectedRole, setSelectedRole] = useState<string>();
     const navigate = useNavigate();
 
     const fetchTerms = async () => {
@@ -112,38 +111,32 @@ export default function CreateUserPage() {
             <Card title="Cadastrar Novo Usuário" style={{ width: 1000, boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', borderRadius: 12, border: '1px solid #d0d0d0', background: '#ffffffee' }}>
                 <Form form={form} onFinish={onSubmit} layout="vertical">
                     <Row gutter={16}>
-                        <Col span={8}><Form.Item label="Nome" name="name" rules={[{ required: true }]}><Input placeholder="Digite um nome" /></Form.Item></Col>
-                        <Col span={8}><Form.Item label="E-mail" name="email" rules={[{ required: true }, { type: 'email' }]}><Input /></Form.Item></Col>
-                        <Col span={8}><Form.Item label="Senha" name="password" rules={[{ required: true }]}><Input.Password /></Form.Item></Col>
-                        <Col span={8}><Form.Item label="Função" name="role" rules={[{ required: true }]}><Select onChange={setSelectedRole}><Option value="ADMIN">Administrador</Option><Option value="EMPLOYEE">Funcionário</Option></Select></Form.Item></Col>
-                        <Col span={8}><Form.Item label="CPF" name="cpf"><Input maxLength={14} placeholder="000.000.000-00" /></Form.Item></Col>
-                        <Col span={8}><Form.Item label="Data de nascimento" name="birthDate"><Input type="date" /></Form.Item></Col>
-                        <Col span={8}><Form.Item label="Telefone" name="phoneNumber"><Input maxLength={15} placeholder="(00) 00000-0000" /></Form.Item></Col>
-                        <Col span={8}><Form.Item label="Cidade" name="city"><Input /></Form.Item></Col>
-                        <Col span={8}><Form.Item label="Estado" name="state"><Input maxLength={2} /></Form.Item></Col>
+                        <Col span={8}><Form.Item label="Nome" name="name" rules={[{ required: true }]}><Input placeholder="Digite o nome completo" /></Form.Item></Col>
+                        <Col span={8}><Form.Item label="E-mail" name="email" rules={[{ required: true }, { type: 'email' }]}><Input placeholder="Digite o e-mail do usuário" /></Form.Item></Col>
+                        <Col span={8}><Form.Item label="Senha" name="password" rules={[{ required: true }]}><Input.Password placeholder="Digite uma senha segura" /></Form.Item></Col>
+                        <Col span={8}><Form.Item label="Função" name="role" rules={[{ required: true }]}><Select placeholder="Selecione a função"><Option value="ADMIN">Administrador</Option><Option value="EMPLOYEE">Funcionário</Option></Select></Form.Item></Col>
+                        <Col span={8}><Form.Item label="CPF (opcional)" name="cpf"><Input maxLength={14} placeholder="000.000.000-00" /></Form.Item></Col>
+                        <Col span={8}><Form.Item label="Data de nascimento (opcional)" name="birthDate"><Input type="date" placeholder="dd/mm/aaaa" /></Form.Item></Col>
+                        <Col span={8}><Form.Item label="Telefone (opcional)" name="phoneNumber"><Input maxLength={15} placeholder="(00) 00000-0000" /></Form.Item></Col>
+                        <Col span={8}><Form.Item label="Cidade (opcional)" name="city"><Input placeholder="Digite a cidade" /></Form.Item></Col>
+                        <Col span={8}><Form.Item label="Estado (opcional)" name="state"><Input maxLength={2} placeholder="UF" /></Form.Item></Col>
                     </Row>
 
-                    <Form.Item label="Termos de consentimento:" name="acceptedTermIds" initialValue={[]}>
+                    <Form.Item label="Termos de consentimento:" name="acceptedTermIds" initialValue={[]}> 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 200, overflowY: 'auto' }}>
-                            {!selectedRole ? (
-                                <i style={{ color: '#999' }}>Selecione uma função para visualizar os termos.</i>
-                            ) : (
-                                terms
-                                    .filter(term => !term.appliesToRoles || term.appliesToRoles === selectedRole)
-                                    .map(term => {
-                                        const alreadyAccepted = acceptedIds.includes(term.id);
-                                        return (
-                                            <div key={term.id} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                <strong>{term.title} (v.{term.version})</strong>
-                                                {alreadyAccepted ? (
-                                                    <span style={{ color: 'green', fontWeight: 'bold' }}>Aceito</span>
-                                                ) : (
-                                                    <Button type="link" onClick={() => setSelectedTerm(term)}>Visualizar</Button>
-                                                )}
-                                            </div>
-                                        );
-                                    })
-                            )}
+                            {terms.map(term => {
+                                const alreadyAccepted = acceptedIds.includes(term.id);
+                                return (
+                                    <div key={term.id} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <strong>{term.title} (v.{term.version})</strong>
+                                        {alreadyAccepted ? (
+                                            <span style={{ color: 'green', fontWeight: 'bold' }}>Aceito</span>
+                                        ) : (
+                                            <Button type="link" onClick={() => setSelectedTerm(term)}>Visualizar</Button>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </Form.Item>
 
