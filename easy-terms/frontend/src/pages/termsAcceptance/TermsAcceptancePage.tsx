@@ -1,11 +1,9 @@
-import { Table, Card, Typography, Tag, Button} from 'antd';
+import { Table, Card, Tag, Button } from 'antd';
 import { useEffect, useState } from 'react';
 import { getTermsAcceptanced, revokeConsent } from '../../services/termsAcceptance/termsAcceptanceService';
 import { RevokeConsentModal } from '../../components/RevokeConsentModal/RevokeConsentModal';
 import { useAuth } from '../../context/AuthContext';
 import { OptionalFieldsModal } from '../../components/OptionalFieldsForm/Index';
-
-const { Title } = Typography;
 
 export default function TermsAcceptancePage() {
   const { user } = useAuth();
@@ -15,6 +13,9 @@ export default function TermsAcceptancePage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [fieldModalOpen, setFieldModalOpen] = useState(false);
   const [selectedFieldLog, setSelectedFieldLog] = useState(null);
+
+  const showActions = (record: any) =>
+    !(user?.role === 'ADMIN' && record.user?.id !== user.id);
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -112,33 +113,46 @@ export default function TermsAcceptancePage() {
       title: 'Ações',
       key: 'actions',
       render: (_: any, record: any) => (
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Button
-            type="default"
-            size="small"
-            onClick={() => openFieldModal(record)}
-            disabled={record.revokedAt}
-          >
-            Ver campos
-          </Button>
-          <Button
-            danger
-            size="small"
-            onClick={() => openModal(record)}
-            disabled={!record.acceptedAt || record.revokedAt}
-          >
-            Revogar
-          </Button>
-        </div>
+        showActions(record) && (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button
+              type="default"
+              size="small"
+              onClick={() => openFieldModal(record)}
+              disabled={record.revokedAt}
+            >
+              Ver campos
+            </Button>
+            <Button
+              danger
+              size="small"
+              onClick={() => openModal(record)}
+              disabled={!record.acceptedAt || record.revokedAt}
+            >
+              Revogar
+            </Button>
+          </div>
+        ) || '-'
       ),
     },
   ];
 
   return (
     <div>
-      <Card>
-        <Title level={3}>Histórico de Termos Aceitos</Title>
 
+      <Card>
+        <h1 style={{ fontSize: 24, marginBottom: 16 }}>Histórico de Termos Aceitos</h1>
+
+        {user?.role === 'ADMIN' && (
+          <div style={{ marginBottom: 20 }}>
+            <span> Observação: Usuários Administradores podem visualizar todos os termos aceitos do sistema. Porém, podem editar apenas os próprios dados.</span>
+          </div>
+        )}
+        {user?.role === 'EMPLOYEE' && (
+          <div style={{ marginBottom: 20 }}>
+            <span> Observação: Usuários Funcionários podem visualizar e editar apenas os próprios dados.</span>
+          </div>
+        )}
         <Table
           columns={columns}
           dataSource={logs}
