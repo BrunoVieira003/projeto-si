@@ -94,8 +94,6 @@ export class UserService {
     return createdUser;
   }
 
-
-
   async listUsers() {
     const usersSaved = await this.userRepository.find();
     const usersList = usersSaved.map(

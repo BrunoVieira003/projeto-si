@@ -14,13 +14,18 @@ export interface TermAcceptanceLog {
       type: 'string' | 'number' | 'boolean' | 'date';
     }[];
   };
-  acceptedCustomFields: {
-    customField: {
-      id: string;
-      name: string;
-      value: string;
-      type: 'string' | 'number' | 'boolean' | 'date';
-    };
-    accepted: boolean;
-  }[];
+  acceptedCustomFields: AcceptedCustomField[];
 }
+
+export type AcceptedCustomField = {
+  id: string | null;
+  accepted: boolean;
+  acceptedAt: string | null;
+  revokedAt: string | null;
+  customField: {
+    id: string;
+    name: string;
+    value: string;
+    type: 'string' | 'number' | 'boolean' | 'date';
+  };
+};

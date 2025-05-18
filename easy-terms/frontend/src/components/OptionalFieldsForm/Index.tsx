@@ -16,26 +16,42 @@ export function OptionalFieldsModal({
   onClose: () => void;
   record: TermAcceptanceLog | null;
 }) {
-  const [customFields, setCustomFields] = useState<TermAcceptanceLog['acceptedCustomFields']>([]);
+  const [customFields, setCustomFields] = useState<any[]>([]);
 
   useEffect(() => {
     if (record) {
-      setCustomFields(record.acceptedCustomFields || []);
+      const acceptedMap = new Map(
+        (record.acceptedCustomFields || []).map((f) => [f.customField.id, f])
+      );
+
+      const merged = record.term.customFields.map((field) => {
+        const matched = acceptedMap.get(field.id);
+        return {
+          key: field.id,
+          id: matched?.id || null,
+          accepted: matched?.accepted ?? false,
+          acceptedAt: matched?.acceptedAt || null,
+          revokedAt: matched?.revokedAt || null,
+          customField: field,
+        };
+      });
+
+      setCustomFields(merged);
     }
   }, [record]);
 
   const handleAcceptField = async (fieldId: string) => {
     const acceptedIds = [...customFields]
-      .filter(f => f.accepted)
-      .map(f => f.customField.id);
+      .filter((f) => f.accepted)
+      .map((f) => f.customField.id);
 
     const newAcceptedIds = [...new Set([...acceptedIds, fieldId])];
 
     try {
       await updateAcceptedFields(record!.id, newAcceptedIds);
 
-      setCustomFields(prev =>
-        prev.map(field =>
+      setCustomFields((prev) =>
+        prev.map((field) =>
           field.customField.id === fieldId
             ? {
                 ...field,
@@ -47,9 +63,9 @@ export function OptionalFieldsModal({
         )
       );
 
-      SweetAlert.success("Sucesso", "Item opcional do termo aceito com sucesso");
+      SweetAlert.success("Sucesso", "Campo aceito com sucesso");
     } catch {
-     SweetAlert.error("Erro", "Erro ao alterar o status do item opcional do term");
+      SweetAlert.error("Erro", "Erro ao aceitar o campo");
     }
   };
 
@@ -57,8 +73,8 @@ export function OptionalFieldsModal({
     try {
       await revokeCustomFieldConsent(record!.id, fieldId);
 
-      setCustomFields(prev =>
-        prev.map(field =>
+      setCustomFields((prev) =>
+        prev.map((field) =>
           field.customField.id === fieldId
             ? {
                 ...field,
@@ -69,9 +85,9 @@ export function OptionalFieldsModal({
         )
       );
 
-     SweetAlert.success("Sucesso", "Item revogado com sucesso");
+      SweetAlert.success("Sucesso", "Campo revogado com sucesso");
     } catch {
-      SweetAlert.error("Erro", "Erro ao revogar o item do termo.")
+      SweetAlert.error("Erro", "Erro ao revogar o campo");
     }
   };
 
@@ -90,7 +106,7 @@ export function OptionalFieldsModal({
       title: 'Status',
       key: 'accepted',
       render: (_: any, row: any) =>
-        row.accepted ? <Tag color="green">Aceito</Tag> : <Tag color="red">Revogado</Tag>,
+        row.accepted ? <Tag color="green">Aceito</Tag> : <Tag color="red">Não aceito</Tag>,
     },
     {
       title: 'Aceito em',
@@ -143,7 +159,7 @@ export function OptionalFieldsModal({
       <Table
         columns={columns}
         dataSource={customFields}
-        rowKey="id"
+        rowKey="customField.id"
         pagination={false}
       />
     </Modal>
