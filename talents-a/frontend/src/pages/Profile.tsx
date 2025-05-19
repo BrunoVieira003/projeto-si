@@ -1,13 +1,17 @@
-import { Flex, List, Spin, Typography } from "antd";
+import { Button, Flex, Spin, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { getUserInfo, UserInfo } from "../services/easy-terms";
 import { SweetAlert } from "../components/SweetAlert/SweetAlert";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
+import { AxiosError } from "axios";
+import { useAuth } from "../context/AuthContext";
 
 export default function Profile(){
     const [userData, setUserData] = useState<UserInfo>()
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(false)
+    const {logout} = useAuth()
+    const navigate = useNavigate()
 
     const fetchUserInfo = async () => {
         try{
@@ -15,6 +19,12 @@ export default function Profile(){
             setUserData(data)
             setLoading(false)
         }catch(e){
+            if(e instanceof AxiosError){
+                if(e.status === 401){
+                    logout()
+                    navigate('/')
+                }
+            }
             setError(true)
         }
     }
@@ -40,6 +50,7 @@ export default function Profile(){
                 <Typography.Title level={4}>Email</Typography.Title>
                 <Typography.Text>{userData?.user.email}</Typography.Text>
             </Flex>
+            <Button onClick={logout}>Logout</Button>
         </Flex>
     )
 }

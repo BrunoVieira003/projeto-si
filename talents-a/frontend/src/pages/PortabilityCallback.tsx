@@ -22,7 +22,7 @@ export default function PortabilityCallback(){
         }catch(e){
             console.error(e)
             SweetAlert.error('Ops!', 'Falha ao importar dados')
-            navigate('/login')
+            navigate('/')
         }
     }
 
