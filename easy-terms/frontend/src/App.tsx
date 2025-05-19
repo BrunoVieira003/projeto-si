@@ -10,6 +10,7 @@ import HistoryPage from './pages/history/HistoryPage';
 import Unauthorized from './components/Unauthorized/Unauthorized';
 import ExternalLoginPage from './pages/portability/ExternalLogin';
 import ConfirmExternalConsentPage from './pages/portability/ExternalConsentConfirmation';
+import IntegrationsList from './pages/portability/IntegrationsList';
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
       <Route element={<PrivateRoutes  allowedRoles={['ADMIN', 'EMPLOYEE']}/>}>
         <Route path="/users" element={<UserPage />} />
         <Route path="/termsAcceptance" element={<TermsAcceptancePage />} />
+        <Route path='/integrations' element={<IntegrationsList/>}/>
       </Route>
     </Routes>
   );

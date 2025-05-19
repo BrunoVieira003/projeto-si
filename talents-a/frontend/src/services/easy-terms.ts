@@ -1,4 +1,5 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
+import { redirect, useNavigate } from 'react-router-dom';
 
 const EasyTermsApi = axios.create({
   baseURL: 'http://localhost:8000',
@@ -23,7 +24,10 @@ async function getUserInfo(token: string): Promise<UserInfo>{
         const { data } = await axios.get(`http://localhost:8000/integration/info/${token}`)
         return data as UserInfo
     }catch(e){
-        console.error(e)
+        if(e instanceof AxiosError && e.status === 401){
+            localStorage.removeItem('token');
+            redirect('/')
+        }
         throw e
     }
 }

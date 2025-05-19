@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateIntegrationDto } from './dto/create-integration.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IntegrationEntity } from 'src/modules/integration/entities/integration.entity';
@@ -18,6 +18,9 @@ export class IntegrationService {
   
   async create(userId: string, createIntegrationDto: CreateIntegrationDto) {
     const user = await this.userService.findById(userId)
+    if(!user){
+      throw new NotFoundException('User not found')
+    }
     const token = await this.jwtService.signAsync({
         sub: user.id,
         name: user.name,
@@ -63,6 +66,11 @@ export class IntegrationService {
 
   async getByToken(token: string){
     const result = this.jwtService.decode(token)
+    const old = await this.repo.findOneBy({id: result.id})
+    if(!old){
+      throw new UnauthorizedException('Token inválido')
+    }
+
     return result
   }
 
