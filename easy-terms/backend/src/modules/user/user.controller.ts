@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Put, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Put, Req, UseGuards } from "@nestjs/common";
 import { ListUsersDTO } from "./dto/ListUser.dto";
 import { CreateUserDTO } from "./dto/CreateUser.dto";
 import { UserService } from "./user.service";
@@ -96,6 +96,15 @@ export class UserController {
       message: "Usuário removido com sucesso",
       user: userRemoved,
     };
+  }
+
+  @Get('/profile')
+  @UseGuards(JwtAuthGuard)
+  async getUserProfile(@Req() req: any){
+    // const user = await this.userService.findById(req.user.sub)
+    return {
+      user: req.user
+    }
   }
 
 }

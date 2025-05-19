@@ -8,6 +8,8 @@ import PrivateRoutes from './routes/PrivateRoutes';
 import CreateUserPage from './pages/users/CreateUserPage';
 import HistoryPage from './pages/history/HistoryPage';
 import Unauthorized from './components/Unauthorized/Unauthorized';
+import ExternalLoginPage from './pages/portability/ExternalLogin';
+import ConfirmExternalConsentPage from './pages/portability/ExternalConsentConfirmation';
 
 export default function App() {
   return (
@@ -15,6 +17,8 @@ export default function App() {
       {/* Rota pública (sem autenticação, sem layout) */}
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<Login />} />
+      <Route path='/portability/login' element={<ExternalLoginPage/>}/>
+      <Route path='/portability/consent' element={<ConfirmExternalConsentPage/>}/>
       <Route path="/confirm-consent" element={<ConfirmConsentPage />} />
       <Route path="/user/create" element={<CreateUserPage />} />
       <Route path="/unauthorized" element={<Unauthorized />} />

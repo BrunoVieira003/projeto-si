@@ -7,6 +7,7 @@ import { Role } from "../user/enums/role.enum";
 export interface UserPayload {
   sub: string;
   name: string;
+  email: string
   role: Role;
 }
 
@@ -29,6 +30,7 @@ export class AuthenticationService {
     const payload: UserPayload = {
       sub: user.id, // subject = sujeito
       name: user.name,
+      email: user.email,
       role: user.role
     };
 
