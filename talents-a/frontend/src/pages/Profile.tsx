@@ -10,12 +10,12 @@ export default function Profile(){
     const [userData, setUserData] = useState<UserInfo>()
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(false)
-    const {logout} = useAuth()
+    const {logout, token} = useAuth()
     const navigate = useNavigate()
 
     const fetchUserInfo = async () => {
         try{
-            const data = await getUserInfo()
+            const data = await getUserInfo(String(token))
             setUserData(data)
             setLoading(false)
         }catch(e){
@@ -44,11 +44,19 @@ export default function Profile(){
 
     
     return (
-        <Flex vertical style={{margin: 100}} align="center">
-            <Typography.Title>Perfil</Typography.Title>
+        <Flex vertical style={{margin: 100}} align="center" gap={'large'}>
+            <Typography.Title>Bem vindo, {userData?.name}</Typography.Title>
             <Flex vertical>
                 <Typography.Title level={4}>Email</Typography.Title>
-                <Typography.Text>{userData?.user.email}</Typography.Text>
+                <Typography.Text>{userData?.email}</Typography.Text>
+            </Flex>
+            <Flex vertical>
+                <Typography.Title level={4}>CPF</Typography.Title>
+                <Typography.Text>{userData?.cpf}</Typography.Text>
+            </Flex>
+            <Flex vertical>
+                <Typography.Title level={4}>Telefone</Typography.Title>
+                <Typography.Text>{userData?.phone}</Typography.Text>
             </Flex>
             <Button onClick={logout}>Logout</Button>
         </Flex>

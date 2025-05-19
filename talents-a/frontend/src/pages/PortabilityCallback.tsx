@@ -1,9 +1,9 @@
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
-import { getUserInfo, getUserInfoFirstTime } from "../services/easy-terms";
 import { useAuth } from "../context/AuthContext";
 import { useEffect, useState } from "react";
 import { SweetAlert } from "../components/SweetAlert/SweetAlert";
 import { Spin } from "antd";
+import { getPortabilityToken } from "../services/easy-terms";
 
 export default function PortabilityCallback(){
     const [searchParams] = useSearchParams()
@@ -15,8 +15,8 @@ export default function PortabilityCallback(){
     const fetchUserInfo = async () => {
         try{
             if(token){
-                const data = await getUserInfoFirstTime(token)
-                login({access_token: token, userId: data.user.sub})
+                const newToken = await getPortabilityToken(token)
+                login(newToken)
                 setReady(true)
             }
         }catch(e){

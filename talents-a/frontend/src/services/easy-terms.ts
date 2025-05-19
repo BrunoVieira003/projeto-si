@@ -11,15 +11,16 @@ EasyTermsApi.interceptors.request.use((config) => {
 });
 
 export interface UserInfo{
-    user: {
         sub: string,
+        name: string
         email: string
-        role: string
-    }
+        cpf: string
+        phone: string
 }
-async function getUserInfo(): Promise<UserInfo>{
+
+async function getUserInfo(token: string): Promise<UserInfo>{
     try{
-        const { data } = await EasyTermsApi.get('/users/profile')
+        const { data } = await axios.get(`http://localhost:8000/integration/info/${token}`)
         return data as UserInfo
     }catch(e){
         console.error(e)
@@ -27,14 +28,14 @@ async function getUserInfo(): Promise<UserInfo>{
     }
 }
 
-async function getUserInfoFirstTime(token: string): Promise<UserInfo>{
+async function getPortabilityToken(token: string){
     try{
-        const { data } = await axios.get('http://localhost:8000/users/profile', {headers: {Authorization: `Bearer ${token}`}})
-        return data as UserInfo
+        const { data } = await axios.post('http://localhost:8000/integration', {name: 'TalentsA'}, {headers: {Authorization: `Bearer ${token}`}})
+        return data.token
     }catch(e){
         console.error(e)
         throw e
     }
 }
 
-export {EasyTermsApi, getUserInfo, getUserInfoFirstTime}
+export {EasyTermsApi, getUserInfo, getPortabilityToken}

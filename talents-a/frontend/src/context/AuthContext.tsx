@@ -4,7 +4,7 @@ interface AuthContextType {
   authenticated: boolean;
   userId: string | null;
   token: string | null;
-  login: (data: { access_token: string; userId: string}) => void;
+  login: (portToken: string) => void;
   logout: () => void;
 }
 
@@ -18,28 +18,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('userId');
 
-    if (storedToken && storedUser) {
+
+    if (storedToken) {
       setToken(storedToken);
-      setUserId(storedUser);
       setAuthenticated(true);
     }
 
     setLoading(false);
   }, []);
 
-  const login = (data: { access_token: string; userId: string }) => {
-    localStorage.setItem('token', data.access_token);
-    localStorage.setItem('userId', data.userId);
-    setToken(data.access_token);
-    setUserId(data.userId);
+  const login = (portToken: string) => {
+    localStorage.setItem('token', portToken);
+    setToken(portToken);
     setAuthenticated(true);
   };
 
   const logout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('userId');
     setToken(null);
     setUserId(null);
     setAuthenticated(false);
