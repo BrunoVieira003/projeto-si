@@ -3,6 +3,7 @@ import { Exclude } from "class-transformer";
 import { ApiTags } from "@nestjs/swagger";
 import { Role } from "../enums/role.enum";
 import { UserTermAcceptanceEntity } from "src/modules/acceptance/entities/user-term-acceptance.entity";
+import { IntegrationEntity } from "src/modules/integration/entities/integration.entity";
 
 @ApiTags("users")
 @Entity({ name: "users" })
@@ -40,6 +41,9 @@ export class UserEntity {
 
   @Column({ name: 'state', length: 2, nullable: true })
   state: string;
+
+  @OneToMany(() => IntegrationEntity, (i) => i.user)
+  integrations: IntegrationEntity[]
 
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;
