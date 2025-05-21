@@ -130,7 +130,7 @@ export default function CreateUserPage() {
                                     <div key={term.id} style={{ display: 'flex', justifyContent: 'space-between' }}>
                                         <strong>{term.title} (v.{term.version})</strong>
                                         {alreadyAccepted ? (
-                                            <span style={{ color: 'green', fontWeight: 'bold' }}>Aceito</span>
+                                            <span style={{ color: 'green', fontWeight: 'bold', paddingRight: 15 }}>Aceito</span>
                                         ) : (
                                             <Button type="link" onClick={() => setSelectedTerm(term)}>Visualizar</Button>
                                         )}
@@ -162,13 +162,13 @@ export default function CreateUserPage() {
                         {(selectedTerm.customFields?.length ?? 0) > 0 && (
                             <div style={{ borderTop: '1px solid #ccc', paddingTop: 12 }}>
                                 <p><strong>Campos opcionais:</strong></p>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginRight: '5px' }}>
                                     {selectedTerm.customFields?.map(field => {
                                         const termId = selectedTerm.id;
                                         const isAccepted = (acceptedFieldMap[termId] || []).includes(field.id);
                                         return (
                                             <div key={field.id} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                <div>{field.name}: {field.value} ({field.type})</div>
+                                                <div> - <strong>{field.name}</strong>: {field.value}</div>
                                                 <Button
                                                     size="small"
                                                     type={isAccepted ? 'default' : 'primary'}

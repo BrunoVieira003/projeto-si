@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  Table, Form, Input, Button, Card, Tag, Modal, Select, Col, Row,
+  Table, Form, Input, Button, Card, Tag, Modal, Col, Row,
   Divider,
 } from 'antd';
 import { createTerm, getTerms } from '../../services/term/termService';
@@ -8,8 +8,6 @@ import { CreateTermPayload } from '../../types/term';
 import { SweetAlert } from '../../components/SweetAlert/SweetAlert';
 import { getUsers } from '../../services/user/userService';
 import { DeleteOutlined } from '@ant-design/icons';
-
-const { Option } = Select;
 
 export default function TermsPage() {
   const [form] = Form.useForm();
@@ -54,6 +52,10 @@ export default function TermsPage() {
       const payload: CreateTermPayload = {
         ...values,
         createdBy: loggedUser?.id || "",
+        customFields: values.customFields?.map((field) => ({
+          ...field,
+          type: 'boolean'
+        })) || []
       };
 
       await createTerm(payload);
@@ -71,12 +73,12 @@ export default function TermsPage() {
     fetchUsers();
   }, []);
 
-  const fieldTypes = [
-    { label: 'Texto', value: 'string' },
-    { label: 'Número', value: 'number' },
-    { label: 'Booleano', value: 'boolean' },
-    { label: 'Data', value: 'date' }
-  ];
+  // const fieldTypes = [
+  //   { label: 'Texto', value: 'string' },
+  //   { label: 'Número', value: 'number' },
+  //   { label: 'Booleano', value: 'boolean' },
+  //   { label: 'Data', value: 'date' }
+  // ];
 
   const columns = [
     {
@@ -213,7 +215,7 @@ export default function TermsPage() {
                         </Form.Item>
                       </Col>
 
-                      <Col xs={24} sm={10}>
+                      <Col xs={24} sm={16}>
                         <Form.Item
                           {...restField}
                           name={[name, 'value']}
@@ -223,7 +225,7 @@ export default function TermsPage() {
                         </Form.Item>
                       </Col>
 
-                      <Col xs={24} sm={6}>
+                      {/* <Col xs={24} sm={6}>
                         <Form.Item
                           {...restField}
                           name={[name, 'type']}
@@ -237,7 +239,7 @@ export default function TermsPage() {
                             ))}
                           </Select>
                         </Form.Item>
-                      </Col>
+                      </Col> */}
 
                       <Col xs={24} sm={2}>
                         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '25px' }}>
