@@ -8,7 +8,7 @@ import { Role } from '../user/enums/role.enum';
 import { ListHistoryLogDTO } from './dto/list-history.dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.ADMIN)
+@Roles(Role.ADMIN, Role.EMPLOYEE)
 @Controller('history')
 @ApiTags('History')
 @ApiBearerAuth()

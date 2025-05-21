@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Table, Tabs, Card, Tag, Typography } from 'antd';
-import { getUserHistoryLogs, getTermHistoryLogs } from '../../services/history/historyService';
+import { getAllHistoryLogs } from '../../services/history/historyService';
 
 const { TabPane } = Tabs;
 const { Title } = Typography;
@@ -8,18 +8,18 @@ const { Title } = Typography;
 export default function HistoryPage() {
     const [userLogs, setUserLogs] = useState([]);
     const [termLogs, setTermLogs] = useState([]);
+    const [acceptanceLogs, setAcceptanceLogs] = useState([]);
     const [loading, setLoading] = useState(false);
 
     const fetchLogs = async () => {
         setLoading(true);
         try {
-            const [userRes, termRes] = await Promise.all([
-                getUserHistoryLogs(),
-                getTermHistoryLogs()
-            ]);
+            const res = await getAllHistoryLogs();
+            const allLogs = res.data;
 
-            setUserLogs(userRes.data);
-            setTermLogs(termRes.data);
+            setUserLogs(allLogs.filter((log: any) => log.entity === 'User'));
+            setTermLogs(allLogs.filter((log: any) => log.entity === 'Term'));
+            setAcceptanceLogs(allLogs.filter((log: any) => log.entity === 'Acceptance'));
         } catch {
             console.error('Erro ao carregar logs');
         } finally {
@@ -36,6 +36,8 @@ export default function HistoryPage() {
         UPDATE_USER: { text: 'Usuário atualizado', color: 'blue' },
         CREATE_TERM: { text: 'Termo criado', color: 'cyan' },
         UPDATE_TERM: { text: 'Termo atualizado', color: 'gold' },
+        ACCEPT_TERM_FIELD: { text: 'Campo aceito', color: 'green' },
+        REVOKE_TERM_FIELD: { text: 'Campo revogado', color: 'red' },
     };
 
     const columns = [
@@ -94,7 +96,18 @@ export default function HistoryPage() {
                     );
                 }
 
-                // fallback para tipos desconhecidos
+                if (record.entity === 'Acceptance') {
+                    return (
+                        <div>
+                            <div><strong>Campo:</strong> {data?.customField?.name}</div>
+                            <div><strong>Valor:</strong> {data?.customField?.value ?? '-'}</div>
+                            <div><strong>Termo:</strong> {data?.userTermAcceptance?.term?.title}</div>
+                            <div><strong>Usuário:</strong> {data?.userTermAcceptance?.user?.name}</div>
+                        </div>
+                    );
+                }
+
+                // fallback
                 return (
                     <pre style={{ maxWidth: 300, whiteSpace: 'pre-wrap' }}>
                         {JSON.stringify(data, null, 2)}
@@ -102,7 +115,6 @@ export default function HistoryPage() {
                 );
             }
         }
-
     ];
 
     return (
@@ -122,6 +134,15 @@ export default function HistoryPage() {
                     <TabPane tab="Termos" key="2">
                         <Table
                             dataSource={termLogs}
+                            columns={columns}
+                            rowKey="id"
+                            loading={loading}
+                            pagination={{ pageSize: 5 }}
+                        />
+                    </TabPane>
+                    <TabPane tab="Aceites" key="3">
+                        <Table
+                            dataSource={acceptanceLogs}
                             columns={columns}
                             rowKey="id"
                             loading={loading}

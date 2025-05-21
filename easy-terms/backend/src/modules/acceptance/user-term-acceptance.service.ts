@@ -4,6 +4,9 @@ import { Repository } from 'typeorm';
 import { UserTermAcceptanceEntity } from './entities/user-term-acceptance.entity';
 import { UserAcceptedCustomFieldEntity } from './entities/user-accepted-custom-fields.entity';
 import { ListAcceptancesDTO } from './dto/list-acceptance.dto';
+import { HistoryService } from '../history/history.service';
+import { HistoryAction } from '../history/enums/history-action.enum';
+import { HistoryEntity } from '../history/enums/history-entity.enum';
 
 @Injectable()
 export class UserTermAcceptanceService {
@@ -13,6 +16,8 @@ export class UserTermAcceptanceService {
 
     @InjectRepository(UserAcceptedCustomFieldEntity)
     private readonly userAcceptedCustomFieldRepository: Repository<UserAcceptedCustomFieldEntity>,
+
+    private readonly historyService: HistoryService,
   ) { }
 
   async findAll(filter?: { userId?: string }): Promise<ListAcceptancesDTO[]> {
@@ -44,15 +49,23 @@ export class UserTermAcceptanceService {
   async updateAcceptedFields(acceptanceId: string, acceptedFieldIds: string[]) {
     const acceptance = await this.userTermAcceptanceRepository.findOne({
       where: { id: acceptanceId },
-      relations: ['term', 'term.customFields', 'acceptedCustomFields', 'acceptedCustomFields.customField'],
+      relations: [
+        'term',
+        'term.customFields',
+        'acceptedCustomFields',
+        'acceptedCustomFields.customField',
+      ],
     });
 
-    if (!acceptance) throw new NotFoundException('Aceite não encontrado');
+    if (!acceptance) {
+      throw new NotFoundException('Aceite não encontrado');
+    }
 
     const existing = acceptance.acceptedCustomFields || [];
     const allFields = acceptance.term.customFields;
+    const entitiesToUpdate: UserAcceptedCustomFieldEntity[] = [];
 
-    const updatedEntities: UserAcceptedCustomFieldEntity[] = [];
+    const entitiesToLog: { id: string; action: HistoryAction }[] = [];
 
     for (const field of allFields) {
       const existingRecord = existing.find((e) => e.customField.id === field.id);
@@ -60,20 +73,19 @@ export class UserTermAcceptanceService {
 
       if (existingRecord) {
         if (isNowAccepted && !existingRecord.accepted) {
-          // Reaceitou o campo
           existingRecord.accepted = true;
           existingRecord.acceptedAt = new Date();
           existingRecord.revokedAt = null;
-          updatedEntities.push(existingRecord);
+          entitiesToUpdate.push(existingRecord);
+          entitiesToLog.push({ id: existingRecord.id, action: HistoryAction.ACCEPT_TERM_FIELD });
+
         } else if (!isNowAccepted && existingRecord.accepted) {
-          // Revogou o campo
           existingRecord.accepted = false;
           existingRecord.revokedAt = new Date();
-          updatedEntities.push(existingRecord);
+          entitiesToUpdate.push(existingRecord);
+          entitiesToLog.push({ id: existingRecord.id, action: HistoryAction.REVOKE_TERM_FIELD });
         }
-        // se nada mudou, não precisa atualizar
       } else if (isNowAccepted) {
-        // Aceitou um campo que ainda não existia
         const newField = this.userAcceptedCustomFieldRepository.create({
           userTermAcceptance: acceptance,
           customField: field,
@@ -81,14 +93,43 @@ export class UserTermAcceptanceService {
           acceptedAt: new Date(),
           revokedAt: null,
         });
-        updatedEntities.push(newField);
+
+        entitiesToUpdate.push(newField);
+        // ID será obtido após save
       }
     }
 
-    await this.userAcceptedCustomFieldRepository.save(updatedEntities);
+    const savedEntities = await this.userAcceptedCustomFieldRepository.save(entitiesToUpdate);
+
+    // Após salvar, combine com logs para novos campos
+    for (const entity of savedEntities) {
+      const action = entity.accepted
+        ? HistoryAction.ACCEPT_TERM_FIELD
+        : HistoryAction.REVOKE_TERM_FIELD;
+
+      const fullEntity = await this.userAcceptedCustomFieldRepository.findOne({
+        where: { id: entity.id },
+        relations: [
+          'userTermAcceptance',
+          'userTermAcceptance.user',
+          'userTermAcceptance.term',
+          'customField',
+        ],
+      });
+
+      if (fullEntity) {
+        await this.historyService.log(
+          action,
+          HistoryEntity.ACCEPTANCE,
+          fullEntity.id.toString(),
+          fullEntity,
+        );
+      }
+    }
 
     return { message: 'Campos opcionais atualizados com sucesso' };
   }
+
 
   async revokeConsent(id: string): Promise<UserTermAcceptanceEntity | null> {
     const record = await this.userTermAcceptanceRepository.findOne({
@@ -99,7 +140,17 @@ export class UserTermAcceptanceService {
     if (!record) return null;
 
     record.revokedAt = new Date();
-    return this.userTermAcceptanceRepository.save(record);
+
+    const revokeConsent = await this.userTermAcceptanceRepository.save(record);
+
+    await this.historyService.log(
+      HistoryAction.REVOKE_TERM_FIELD,
+      HistoryEntity.ACCEPTANCE,
+      revokeConsent.id.toString(),
+      revokeConsent,
+    );
+
+    return revokeConsent;
   }
 
   async revokeCustomFieldConsent(acceptanceId: string, fieldId: string) {
@@ -108,7 +159,11 @@ export class UserTermAcceptanceService {
         userTermAcceptance: { id: acceptanceId },
         customField: { id: fieldId },
       },
-      relations: ['userTermAcceptance', 'customField'],
+      relations: [
+        'userTermAcceptance',
+        'userTermAcceptance.user',
+        'userTermAcceptance.term',
+        'customField'],
     });
 
     if (!acceptedField) {
@@ -118,7 +173,14 @@ export class UserTermAcceptanceService {
     acceptedField.accepted = false;
     acceptedField.revokedAt = new Date();
 
-    await this.userAcceptedCustomFieldRepository.save(acceptedField);
+    const revokeConsent = await this.userAcceptedCustomFieldRepository.save(acceptedField);
+
+    await this.historyService.log(
+      HistoryAction.REVOKE_TERM_FIELD,
+      HistoryEntity.ACCEPTANCE,
+      revokeConsent.id.toString(),
+      revokeConsent,
+    );
 
     return {
       message: 'Campo opcional revogado com sucesso',
