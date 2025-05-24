@@ -89,6 +89,29 @@ export class UserService {
         .filter((item): item is UserAcceptedCustomFieldEntity => item !== null);
 
       await this.userAcceptedCustomFieldRepository.save(fieldAcceptances);
+
+      // 🔹 Histórico de cada campo opcional aceito
+      for (const field of fieldAcceptances) {
+        const fullField = await this.userAcceptedCustomFieldRepository.findOne({
+          where: { id: field.id },
+          relations: [
+            'userTermAcceptance',
+            'userTermAcceptance.user',
+            'userTermAcceptance.term',
+            'customField',
+          ],
+        });
+
+        if (fullField) {
+          await this.historyService.log(
+            HistoryAction.ACCEPT_TERM_FIELD,
+            HistoryEntity.ACCEPTANCE,
+            fullField.id,
+            fullField,
+          );
+        }
+      }
+
     }
 
     return createdUser;
