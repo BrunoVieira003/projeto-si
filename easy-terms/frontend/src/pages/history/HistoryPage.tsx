@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Table, Tabs, Card, Tag, Typography } from 'antd';
+import { Table, Tabs, Card, Tag, Typography, Button, Space } from 'antd';
 import { getAllHistoryLogs } from '../../services/history/historyService';
 
 const { TabPane } = Tabs;
@@ -37,7 +37,92 @@ export default function HistoryPage() {
         CREATE_TERM: { text: 'Termo criado', color: 'cyan' },
         UPDATE_TERM: { text: 'Termo atualizado', color: 'gold' },
         ACCEPT_TERM_FIELD: { text: 'Campo aceito', color: 'green' },
+        ACCEPT_TERM: { text: 'Termo Aceito', color: 'green' },
+        REVOKE_TERM: { text: 'Termo Revogado', color: 'red' },
         REVOKE_TERM_FIELD: { text: 'Campo revogado', color: 'red' },
+    };
+
+    const renderDetails = (data: any, record: any) => {
+        if (!data) return '-';
+
+        if (record.entity === 'User') {
+            return (
+                <>
+                    <div><strong>Nome:</strong> {data.name}</div>
+                    <div><strong>Email:</strong> {data.email}</div>
+                    <div><strong>Função:</strong> {data.role}</div>
+                </>
+            );
+        }
+
+        if (record.entity === 'Term') {
+            return (
+                <>
+                    <div><strong>Título:</strong> {data.title}</div>
+                    <div><strong>Versão:</strong> {data.version}</div>
+                    <div><strong>Conteúdo:</strong> {data.content}</div>
+                    <div><strong>Campos Opcionais:</strong></div>
+                    <ul style={{ paddingLeft: 20 }}>
+                        {Array.isArray(data.customFields) && data.customFields.length > 0 ? (
+                            data.customFields.map((field: any) => (
+                                <li key={field.id}>
+                                    <strong>{field.name}</strong> ({field.type}): {field.value}
+                                </li>
+                            ))
+                        ) : (
+                            <li>Nenhum campo opcional definido.</li>
+                        )}
+                    </ul>
+                </>
+            );
+        }
+
+        if (record.entity === 'Acceptance') {
+            if (record.action === 'ACCEPT_TERM_FIELD' || record.action === 'REVOKE_TERM_FIELD') {
+                return (
+                    <>
+                        <div><strong>Campo:</strong> {data?.customField?.name}</div>
+                        <div><strong>Valor:</strong> {data?.customField?.value ?? '-'}</div>
+                        <div><strong>Termo:</strong> {data?.userTermAcceptance?.term?.title}</div>
+                        <div><strong>Versão Termo:</strong> {data?.userTermAcceptance?.term?.version}</div>
+                        <div><strong>Usuário:</strong> {data?.userTermAcceptance?.user?.name}</div>
+                        <div><strong>Data de Aceite:</strong> {data?.acceptedAt ? new Date(data.acceptedAt).toLocaleString('pt-BR') : '-'}</div>
+                        <div><strong>Data da Revogação:</strong> {data?.revokedAt ? new Date(data.revokedAt).toLocaleString('pt-BR') : '-'}</div>
+                    </>
+                );
+            }
+
+            if (record.action === 'ACCEPT_TERM' || record.action === 'REVOKE_TERM') {
+                return (
+                    <>
+                        <div><strong>Termo:</strong> {data?.term?.title}</div>
+                        <div><strong>Versão:</strong> {data?.term?.version}</div>
+                        <div><strong>Conteúdo:</strong> {data?.term?.content}</div>
+                        <div><strong>Usuário:</strong> {data?.user?.name} ({data?.user?.email})</div>
+                        <div><strong>Data de Aceite:</strong> {data?.acceptedAt ? new Date(data.acceptedAt).toLocaleString('pt-BR') : '-'}</div>
+                        <div><strong>Data da Revogação:</strong> {data?.revokedAt ? new Date(data.revokedAt).toLocaleString('pt-BR') : '-'}</div>
+                        <div><strong>Campos Opcionais:</strong></div>
+                        <ul style={{ paddingLeft: 20 }}>
+                            {Array.isArray(data?.term?.customFields) && data.term.customFields.length > 0 ? (
+                                data.term.customFields.map((field: any) => (
+                                    <li key={field.id}>
+                                        <strong>{field.name}</strong> ({field.type}): {field.value}
+                                    </li>
+                                ))
+                            ) : (
+                                <li>Nenhum campo opcional definido.</li>
+                            )}
+                        </ul>
+                    </>
+                );
+            }
+        }
+
+        return (
+            <pre style={{ maxWidth: 300, whiteSpace: 'pre-wrap' }}>
+                {JSON.stringify(data, null, 2)}
+            </pre>
+        );
     };
 
     const columns = [
@@ -51,6 +136,23 @@ export default function HistoryPage() {
             },
         },
         {
+            title: 'Entidade',
+            dataIndex: 'entity',
+            key: 'entity',
+        },
+        {
+            title: 'Responsável / Usuário',
+            key: 'user',
+            render: (_: any, record: any) => {
+                const data = record.data;
+                if (record.entity === 'User') return data?.name ?? '-';
+                if (record.entity === 'Acceptance') {
+                    return data?.user?.name || data?.userTermAcceptance?.user?.name || '-';
+                }
+                return '-';
+            },
+        },
+        {
             title: 'Data e Horário',
             dataIndex: 'createdAt',
             key: 'createdAt',
@@ -58,69 +160,20 @@ export default function HistoryPage() {
                 value ? new Date(value).toLocaleString('pt-BR') : '-',
         },
         {
-            title: 'Dados Criados/Alterados',
+            title: 'Detalhes',
             dataIndex: 'data',
-            key: 'data',
-            render: (data: any, record: any) => {
-                if (!data) return '-';
-
-                if (record.entity === 'User') {
-                    return (
-                        <div>
-                            <div><strong>Nome:</strong> {data.name}</div>
-                            <div><strong>Email:</strong> {data.email}</div>
-                            <div><strong>Função:</strong> {data.role}</div>
-                        </div>
-                    );
-                }
-
-                if (record.entity === 'Term') {
-                    return (
-                        <div>
-                            <div><strong>Título:</strong> {data.title}</div>
-                            <div><strong>Versão:</strong> {data.version}</div>
-                            <div><strong>Conteúdo:</strong> {data.content}</div>
-                            <div><strong>Itens Opcionais:</strong></div>
-                            <ul style={{ paddingLeft: 20 }}>
-                                {Array.isArray(data.customFields) && data.customFields.length > 0 ? (
-                                    data.customFields.map((field: any) => (
-                                        <li key={field.id}>
-                                            <strong>{field.name}</strong> ({field.type}): {field.value}
-                                        </li>
-                                    ))
-                                ) : (
-                                    <li>Nenhum campo opcional definido.</li>
-                                )}
-                            </ul>
-                        </div>
-                    );
-                }
-
-                if (record.entity === 'Acceptance') {
-                    return (
-                        <div>
-                            <div><strong>Campo:</strong> {data?.customField?.name}</div>
-                            <div><strong>Valor:</strong> {data?.customField?.value ?? '-'}</div>
-                            <div><strong>Termo:</strong> {data?.userTermAcceptance?.term?.title}</div>
-                            <div><strong>Usuário:</strong> {data?.userTermAcceptance?.user?.name}</div>
-                        </div>
-                    );
-                }
-
-                // fallback
-                return (
-                    <pre style={{ maxWidth: 300, whiteSpace: 'pre-wrap' }}>
-                        {JSON.stringify(data, null, 2)}
-                    </pre>
-                );
-            }
-        }
+            key: 'details',
+            render: renderDetails,
+        },
     ];
 
     return (
         <div>
             <Card>
-                <Title level={3}>Histórico de Alterações</Title>
+                <Space style={{ justifyContent: 'space-between', width: '100%' }} direction="vertical">
+                    <Title level={3}>Histórico de Alterações</Title>
+                    <Button onClick={fetchLogs} loading={loading}>Atualizar</Button>
+                </Space>
                 <Tabs defaultActiveKey="1">
                     <TabPane tab="Usuários" key="1">
                         <Table

@@ -134,7 +134,12 @@ export class UserTermAcceptanceService {
   async revokeConsent(id: string): Promise<UserTermAcceptanceEntity | null> {
     const record = await this.userTermAcceptanceRepository.findOne({
       where: { id },
-      relations: ['user', 'term'],
+      relations: [
+        'user',
+        'term',
+        'acceptedCustomFields',
+        'acceptedCustomFields.customField',
+      ],
     });
 
     if (!record) return null;
@@ -144,10 +149,10 @@ export class UserTermAcceptanceService {
     const revokeConsent = await this.userTermAcceptanceRepository.save(record);
 
     await this.historyService.log(
-      HistoryAction.REVOKE_TERM_FIELD,
+      HistoryAction.REVOKE_TERM,
       HistoryEntity.ACCEPTANCE,
       revokeConsent.id.toString(),
-      revokeConsent,
+      revokeConsent, // Agora completo para audit trail
     );
 
     return revokeConsent;
