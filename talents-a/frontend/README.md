@@ -7,9 +7,9 @@ O sistema Talents A é um sistema para demonstração de como implementar portab
 
 ### Portabilidade de dados
 O sistema Talenst-a importa os dados do sistema EasyTerms. O fluxo ocorre da seguinte maneira:
-  1. Talents-a redireciona o usuário para o sistema origem (EasyTerms) para que o usuário se autentique e permita o compartilhamento de dados
+  1. Talents-a requisita ao sistema origem (EasyTerms) para que o usuário se autentique e permita o compartilhamento de dados
   2. O sistema origem então fornece um token descartável para o sistema destino (Talents-a) para que ele requisite um token específico de portabilidade ao sistema origem. Após receber a resposta, esse token é armazenado para futuras requisições
-  3. O usuário, através do sistema origem, pode revogar essa autorização bloqueando o sistema destino de acessar seus dados
+  3. O usuário, através tanto do sistema destino quanto do sistema origem, pode revogar essa autorização bloqueando o compartilhamento dos dados
 
 ### Autenticidade
 O sistema que deseja acessar os dados compartilhados deve ser conhecido pelo sistema origem. O sistema origem deve ser capaz de reconhecer um sistema conhecido através do envio de um certificado SSL, que comprove sua identidade
