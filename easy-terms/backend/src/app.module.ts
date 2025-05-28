@@ -11,6 +11,7 @@ import { TermModule } from "./modules/term/term.module";
 import { HistoryModule } from "./modules/history/history.module";
 import { EmailModule } from "./modules/email/email.module";
 import { UserTermAcceptanceModule } from "./modules/acceptance/user-term-acceptance.module";
+import { IntegrationModule } from './modules/integration/integration.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { UserTermAcceptanceModule } from "./modules/acceptance/user-term-accepta
     HistoryModule,
     EmailModule,
     UserTermAcceptanceModule,
+    IntegrationModule,
   ],
   controllers: [],
   providers: [

@@ -36,6 +36,7 @@ export default function NavbarLayout({ children }: { children: React.ReactNode }
     { key: '/users', icon: <UserOutlined />, label: 'Usuários', roles: ['ADMIN', 'EMPLOYEE'] },
     { key: '/termsAcceptance', icon: <FileTextOutlined />, label: 'Termos Aceitos', roles: ['ADMIN', 'EMPLOYEE'] },
     { key: '/history', icon: <FileTextOutlined />, label: 'Histórico', roles: ['ADMIN'] },
+    { key: '/integrations', icon: <FileTextOutlined />, label: 'Integrações', roles: ['ADMIN', 'EMPLOYEE'] },
     { key: 'logout', icon: <LogoutOutlined />, label: 'Sair', roles: ['ADMIN', 'EMPLOYEE'] },
   ];
 
