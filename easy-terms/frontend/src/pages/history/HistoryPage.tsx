@@ -8,7 +8,8 @@ const { Title } = Typography;
 export default function HistoryPage() {
     const [userLogs, setUserLogs] = useState([]);
     const [termLogs, setTermLogs] = useState([]);
-    const [acceptanceLogs, setAcceptanceLogs] = useState([]);
+    const [acceptedLogs, setAcceptedLogs] = useState([]);
+    const [revokedLogs, setRevokedLogs] = useState([]);
     const [loading, setLoading] = useState(false);
 
     const fetchLogs = async () => {
@@ -19,7 +20,8 @@ export default function HistoryPage() {
 
             setUserLogs(allLogs.filter((log: any) => log.entity === 'User'));
             setTermLogs(allLogs.filter((log: any) => log.entity === 'Term'));
-            setAcceptanceLogs(allLogs.filter((log: any) => log.entity === 'Acceptance'));
+            setAcceptedLogs(allLogs.filter((log: any) => log.entity === 'Acceptance' && log.action.startsWith('ACCEPT')));
+            setRevokedLogs(allLogs.filter((log: any) => log.entity === 'Acceptance' && log.action.startsWith('REVOKE')));
         } catch {
             console.error('Erro ao carregar logs');
         } finally {
@@ -98,7 +100,32 @@ export default function HistoryPage() {
                 );
             }
 
-            if (record.action === 'ACCEPT_TERM' || record.action === 'REVOKE_TERM') {
+            if (record.action === 'ACCEPT_TERM') {
+                return (
+                    <>
+                        <div><strong>Termo:</strong> {data?.term?.title}</div>
+                        <div><strong>Versão:</strong> {data?.term?.version}</div>
+                        <div><strong>Conteúdo:</strong> {data?.term?.content}</div>
+                        <div><strong>Usuário:</strong> {data?.user?.name} ({data?.user?.email})</div>
+                        <div><strong>Data de Aceite:</strong> {data?.acceptedAt ? new Date(data.acceptedAt).toLocaleString('pt-BR') : '-'}</div>
+                        <div><strong>Data da Revogação:</strong> {data?.revokedAt ? new Date(data.revokedAt).toLocaleString('pt-BR') : '-'}</div>
+                        <div><strong>Campos Opcionais:</strong></div>
+                        <ul style={{ paddingLeft: 20 }}>
+                            {Array.isArray(data?.term?.customFields) && data.term.customFields.length > 0 ? (
+                                data.term.customFields.map((field: any) => (
+                                    <li key={field.id}>
+                                        <strong>{field.name}</strong> ({field.type}): {field.value}
+                                    </li>
+                                ))
+                            ) : (
+                                <li>Nenhum campo opcional definido.</li>
+                            )}
+                        </ul>
+                    </>
+                );
+            }
+
+            if (record.action === 'REVOKE_TERM') {
                 return (
                     <>
                         <div><strong>Termo:</strong> {data?.term?.title}</div>
@@ -205,10 +232,20 @@ export default function HistoryPage() {
                             pagination={{ pageSize: 5 }}
                         />
                     </TabPane>
-                    <TabPane tab="Itens Aceitos/Revogados" key="3">
+                    <TabPane tab="Itens Aceitos" key="3">
                         <Table
                             bordered
-                            dataSource={acceptanceLogs}
+                            dataSource={acceptedLogs}
+                            columns={columns}
+                            rowKey="id"
+                            loading={loading}
+                            pagination={{ pageSize: 5 }}
+                        />
+                    </TabPane>
+                     <TabPane tab="Itens Revogados" key="4">
+                        <Table
+                            bordered
+                            dataSource={revokedLogs}
                             columns={columns}
                             rowKey="id"
                             loading={loading}
