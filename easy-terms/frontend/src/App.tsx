@@ -11,6 +11,8 @@ import Unauthorized from './components/Unauthorized/Unauthorized';
 import ExternalLoginPage from './pages/portability/ExternalLogin';
 import ConfirmExternalConsentPage from './pages/portability/ExternalConsentConfirmation';
 import IntegrationsList from './pages/portability/IntegrationsList';
+import IntegrationOrgRequest from './pages/portability/IntegrationOrgRequest';
+import IntegratedOrgs from './pages/portability/IntegratedOrgs';
 
 export default function App() {
   return (
@@ -23,11 +25,13 @@ export default function App() {
       <Route path="/confirm-consent" element={<ConfirmConsentPage />} />
       <Route path="/user/create" element={<CreateUserPage />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
+      <Route path="/new-external-org" element={<IntegrationOrgRequest />} />
 
       {/* Rotas privadas (com Navbar e auth obrigatória) */}
       <Route element={<PrivateRoutes  allowedRoles={['ADMIN']}/>}>
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/history" element={<HistoryPage />} />
+        <Route path="/integrated-orgs" element={<IntegratedOrgs />} />
       </Route>
 
       <Route element={<PrivateRoutes  allowedRoles={['ADMIN', 'EMPLOYEE']}/>}>
