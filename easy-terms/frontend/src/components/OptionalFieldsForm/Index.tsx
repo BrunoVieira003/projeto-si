@@ -54,11 +54,11 @@ export function OptionalFieldsModal({
         prev.map((field) =>
           field.customField.id === fieldId
             ? {
-                ...field,
-                accepted: true,
-                acceptedAt: new Date().toISOString(),
-                revokedAt: null,
-              }
+              ...field,
+              accepted: true,
+              acceptedAt: new Date().toISOString(),
+              revokedAt: null,
+            }
             : field
         )
       );
@@ -77,10 +77,10 @@ export function OptionalFieldsModal({
         prev.map((field) =>
           field.customField.id === fieldId
             ? {
-                ...field,
-                accepted: false,
-                revokedAt: new Date().toISOString(),
-              }
+              ...field,
+              accepted: false,
+              revokedAt: new Date().toISOString(),
+            }
             : field
         )
       );
@@ -154,9 +154,10 @@ export function OptionalFieldsModal({
       onCancel={onClose}
       footer={null}
       title={`Campos opcionais - ${record?.term.title} (v${record?.term.version})`}
-      width={850}
+      width={1000}
     >
       <Table
+        bordered
         columns={columns}
         dataSource={customFields}
         rowKey="customField.id"

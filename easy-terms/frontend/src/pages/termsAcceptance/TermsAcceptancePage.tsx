@@ -154,6 +154,7 @@ export default function TermsAcceptancePage() {
           </div>
         )}
         <Table
+          bordered
           columns={columns}
           dataSource={logs}
           rowKey="id"

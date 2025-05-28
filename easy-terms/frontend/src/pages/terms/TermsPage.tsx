@@ -225,22 +225,6 @@ export default function TermsPage() {
                         </Form.Item>
                       </Col>
 
-                      {/* <Col xs={24} sm={6}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 'type']}
-                          rules={[{ required: true, message: 'Tipo obrigatório' }]}
-                        >
-                          <Select placeholder="Tipo do campo">
-                            {fieldTypes.map((ft) => (
-                              <Option key={ft.value} value={ft.value}>
-                                {ft.label}
-                              </Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
-                      </Col> */}
-
                       <Col xs={24} sm={2}>
                         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '25px' }}>
                           <Button
@@ -276,6 +260,7 @@ export default function TermsPage() {
         <div style={{ marginTop: 20 }}>
           <Card title="Termos Cadastrados" style={{ flex: 2 }}>
             <Table
+              bordered
               columns={columns}
               dataSource={terms}
               rowKey="id"

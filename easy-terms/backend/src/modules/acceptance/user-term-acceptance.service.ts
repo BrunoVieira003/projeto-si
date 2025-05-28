@@ -130,7 +130,6 @@ export class UserTermAcceptanceService {
     return { message: 'Campos opcionais atualizados com sucesso' };
   }
 
-
   async revokeConsent(id: string): Promise<UserTermAcceptanceEntity | null> {
     const record = await this.userTermAcceptanceRepository.findOne({
       where: { id },
