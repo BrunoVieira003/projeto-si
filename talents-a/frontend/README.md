@@ -1,54 +1,35 @@
-# React + TypeScript + Vite
+# Talents-a
+## Conceito
+O sistema Talents A é um sistema para demonstração de como implementar portabilidade de acordo com a LGPD. Para que meus dados sejam importados de um sistema para o outro é necessário:
+- Requisitar a permissão do usuário para compartilhar seus dados
+- Expor de maneira clara quais dados serão exportados
+- Garantir a autenticidade do sistema que deseja importar os dados
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+### Portabilidade de dados
+O sistema Talenst-a importa os dados do sistema EasyTerms. O fluxo ocorre da seguinte maneira:
+  1. Talents-a redireciona o usuário para o sistema origem (EasyTerms) para que o usuário se autentique e permita o compartilhamento de dados
+  2. O sistema origem então fornece um token descartável para o sistema destino (Talents-a) para que ele requisite um token específico de portabilidade ao sistema origem. Após receber a resposta, esse token é armazenado para futuras requisições
+  3. O usuário, através do sistema origem, pode revogar essa autorização bloqueando o sistema destino de acessar seus dados
 
-Currently, two official plugins are available:
+### Autenticidade
+O sistema que deseja acessar os dados compartilhados deve ser conhecido pelo sistema origem. O sistema origem deve ser capaz de reconhecer um sistema conhecido através do envio de um certificado SSL, que comprove sua identidade
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Como rodar
+### Dependências
+- Node.js
 
-## Expanding the ESLint configuration
+### Rodando o projeto
+Instale as dependencias
+`npm install`
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+Rode o projeto
+Para desenvolvimento
+```bash
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+```bash
+npm run build
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+npm start
 ```
