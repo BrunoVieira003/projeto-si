@@ -92,7 +92,7 @@ export default function HistoryPage() {
                         <div><strong>Termo:</strong> {data?.userTermAcceptance?.term?.title}</div>
                         <div><strong>Versão Termo:</strong> {data?.userTermAcceptance?.term?.version}</div>
                         <div><strong>Usuário:</strong> {data?.userTermAcceptance?.user?.name}</div>
-                        <div><strong>Data de Aceite:</strong> {data?.acceptedAt ? new Date(data.acceptedAt).toLocaleString('pt-BR') : '-'}</div>
+                        <div><strong>Data de Aceite:</strong> {data?.acceptedAt ? new Date(data.acceptedAt).toLocaleString('pt-BR') : '-' }</div>
                         <div><strong>Data da Revogação:</strong> {data?.revokedAt ? new Date(data.revokedAt).toLocaleString('pt-BR') : '-'}</div>
                     </>
                 );

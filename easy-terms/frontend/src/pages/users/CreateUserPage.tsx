@@ -150,7 +150,7 @@ export default function CreateUserPage() {
                 onCancel={() => setSelectedTerm(null)}
                 title={selectedTerm?.title}
                 footer={<Button onClick={() => setSelectedTerm(null)}>Fechar</Button>}
-                width={700}
+                width={800}
             >
                 {selectedTerm && (
                     <>
@@ -162,7 +162,7 @@ export default function CreateUserPage() {
                         {(selectedTerm.customFields?.length ?? 0) > 0 && (
                             <div style={{ borderTop: '1px solid #ccc', paddingTop: 12 }}>
                                 <p><strong>Campos opcionais:</strong></p>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginRight: '5px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginRight: '5px', marginLeft: '5px' }}>
                                     {selectedTerm.customFields?.map(field => {
                                         const termId = selectedTerm.id;
                                         const isAccepted = (acceptedFieldMap[termId] || []).includes(field.id);
