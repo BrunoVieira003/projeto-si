@@ -12,7 +12,6 @@ import { HistoryModule } from "./modules/history/history.module";
 import { EmailModule } from "./modules/email/email.module";
 import { UserTermAcceptanceModule } from "./modules/acceptance/user-term-acceptance.module";
 import { IntegrationModule } from './modules/integration/integration.module';
-import { IntegrationOrgModule } from './modules/integration-org/integration-org.module';
 
 @Module({
   imports: [
@@ -30,7 +29,6 @@ import { IntegrationOrgModule } from './modules/integration-org/integration-org.
     EmailModule,
     UserTermAcceptanceModule,
     IntegrationModule,
-    IntegrationOrgModule,
   ],
   controllers: [],
   providers: [

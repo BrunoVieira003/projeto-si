@@ -2,9 +2,7 @@ import { Controller, Get, Post, Body, Param, Delete, UseGuards, Req } from '@nes
 import { IntegrationService } from './integration.service';
 import { CreateIntegrationDto } from './dto/create-integration.dto';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
-import { ApiTags } from '@nestjs/swagger';
 
-@ApiTags('integration')
 @Controller('integration')
 export class IntegrationController {
   constructor(private readonly integrationService: IntegrationService) {}

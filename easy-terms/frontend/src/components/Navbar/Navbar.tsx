@@ -5,7 +5,6 @@ import {
   LogoutOutlined,
   MenuUnfoldOutlined,
   MenuFoldOutlined,
-  GlobalOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -38,7 +37,6 @@ export default function NavbarLayout({ children }: { children: React.ReactNode }
     { key: '/termsAcceptance', icon: <FileTextOutlined />, label: 'Termos Aceitos', roles: ['ADMIN', 'EMPLOYEE'] },
     { key: '/history', icon: <FileTextOutlined />, label: 'Histórico', roles: ['ADMIN'] },
     { key: '/integrations', icon: <FileTextOutlined />, label: 'Integrações', roles: ['ADMIN', 'EMPLOYEE'] },
-    { key: '/integrated-orgs', icon: <GlobalOutlined />, label: 'Organizações', roles: ['ADMIN'] },
     { key: 'logout', icon: <LogoutOutlined />, label: 'Sair', roles: ['ADMIN', 'EMPLOYEE'] },
   ];
 
