@@ -18,8 +18,8 @@ export class UserAcceptedCustomFieldEntity {
   @Column({ default: true })
   accepted: boolean;
 
-  @CreateDateColumn({ nullable: true })
-  acceptedAt: Date;
+  @CreateDateColumn({ type: 'timestamp',nullable: true })
+  acceptedAt: Date | null;
 
   @Column({ type: 'timestamp', nullable: true })
   revokedAt: Date | null;

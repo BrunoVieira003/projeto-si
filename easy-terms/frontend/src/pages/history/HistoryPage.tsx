@@ -32,7 +32,7 @@ export default function HistoryPage() {
     }, []);
 
     const actionTagMap: Record<string, { text: string; color: string }> = {
-        CREATE_USER: { text: 'Usuário criado', color: 'green' },
+        CREATE_USER: { text: 'Usuário criado', color: 'blue' },
         UPDATE_USER: { text: 'Usuário atualizado', color: 'blue' },
         CREATE_TERM: { text: 'Termo criado', color: 'cyan' },
         UPDATE_TERM: { text: 'Termo atualizado', color: 'gold' },
@@ -40,6 +40,12 @@ export default function HistoryPage() {
         ACCEPT_TERM: { text: 'Termo Aceito', color: 'green' },
         REVOKE_TERM: { text: 'Termo Revogado', color: 'red' },
         REVOKE_TERM_FIELD: { text: 'Campo revogado', color: 'red' },
+    };
+
+    const entityTagMap: Record<string, { text: string; color: string }> = {
+        User: { text: 'Usuário', color: 'blue' },
+        Term: { text: 'Termo', color: 'cyan' },
+        Acceptance: { text: 'Itens Termo', color: 'green' },
     };
 
     const renderDetails = (data: any, record: any) => {
@@ -86,7 +92,7 @@ export default function HistoryPage() {
                         <div><strong>Termo:</strong> {data?.userTermAcceptance?.term?.title}</div>
                         <div><strong>Versão Termo:</strong> {data?.userTermAcceptance?.term?.version}</div>
                         <div><strong>Usuário:</strong> {data?.userTermAcceptance?.user?.name}</div>
-                        <div><strong>Data de Aceite:</strong> {data?.acceptedAt ? new Date(data.acceptedAt).toLocaleString('pt-BR') : '-'}</div>
+                        <div><strong>Data de Aceite:</strong> {data?.acceptedAt ? new Date(data.acceptedAt).toLocaleString('pt-BR') : '-' }</div>
                         <div><strong>Data da Revogação:</strong> {data?.revokedAt ? new Date(data.revokedAt).toLocaleString('pt-BR') : '-'}</div>
                     </>
                 );
@@ -139,17 +145,21 @@ export default function HistoryPage() {
             title: 'Entidade',
             dataIndex: 'entity',
             key: 'entity',
+            render: (action: string) => {
+                const tagInfo = entityTagMap[action] ?? { text: action, color: 'default' };
+                return <Tag color={tagInfo.color}>{tagInfo.text}</Tag>;
+            },
         },
         {
-            title: 'Responsável / Usuário',
+            title: 'ID Responsável',
             key: 'user',
             render: (_: any, record: any) => {
                 const data = record.data;
-                if (record.entity === 'User') return data?.name ?? '-';
+                if (record.entity === 'User') return data?.id ?? '-';
                 if (record.entity === 'Acceptance') {
-                    return data?.user?.name || data?.userTermAcceptance?.user?.name || '-';
+                    return data?.userTermAcceptance?.user?.id || '-';
                 }
-                return '-';
+                if (record.entity === 'Term') return data?.createdBy ?? '-';
             },
         },
         {
@@ -177,6 +187,7 @@ export default function HistoryPage() {
                 <Tabs defaultActiveKey="1">
                     <TabPane tab="Usuários" key="1">
                         <Table
+                            bordered
                             dataSource={userLogs}
                             columns={columns}
                             rowKey="id"
@@ -186,6 +197,7 @@ export default function HistoryPage() {
                     </TabPane>
                     <TabPane tab="Termos" key="2">
                         <Table
+                            bordered
                             dataSource={termLogs}
                             columns={columns}
                             rowKey="id"
@@ -193,8 +205,9 @@ export default function HistoryPage() {
                             pagination={{ pageSize: 5 }}
                         />
                     </TabPane>
-                    <TabPane tab="Aceites" key="3">
+                    <TabPane tab="Itens Aceitos/Revogados" key="3">
                         <Table
+                            bordered
                             dataSource={acceptanceLogs}
                             columns={columns}
                             rowKey="id"

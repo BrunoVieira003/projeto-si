@@ -44,6 +44,8 @@ export class UserService {
       createdUser,
     );
 
+    let savedAcceptances: UserTermAcceptanceEntity[] = [];
+
     // 1. Criação dos aceites de termos
     if (Array.isArray(data.acceptedTermIds) && data.acceptedTermIds.length > 0) {
       const termEntities = await this.termRepository.findByIds(data.acceptedTermIds);
@@ -56,66 +58,64 @@ export class UserService {
         })
       );
 
-      await this.userTermAcceptanceRepository.save(acceptancesToSave);
+      savedAcceptances = await this.userTermAcceptanceRepository.save(acceptancesToSave);
     }
 
-    // 2. Criação dos campos opcionais aceitos
-    if (Array.isArray(data.acceptedFieldIds) && data.acceptedFieldIds.length > 0) {
-      const customFields = await this.termCustomFieldRepository.find({
-        where: { id: In(data.acceptedFieldIds) },
-        relations: ['term'],
+    // 2. Criação de aceites e revogações de campos opcionais
+    const acceptedFieldIds = new Set(data.acceptedFieldIds || []);
+    const allCustomFields = await this.termCustomFieldRepository.find({
+      where: savedAcceptances.length > 0
+        ? { term: In(savedAcceptances.map(a => a.termId)) }
+        : {},
+      relations: ['term'],
+    });
+
+    const userAcceptedFieldsToSave: UserAcceptedCustomFieldEntity[] = [];
+
+    for (const field of allCustomFields) {
+      const acceptance = savedAcceptances.find(acc => acc.termId === field.term.id);
+      if (!acceptance) continue;
+
+      const isAccepted = acceptedFieldIds.has(field.id);
+
+      const newFieldEntity = this.userAcceptedCustomFieldRepository.create({
+        userTermAcceptance: acceptance,
+        customField: field,
+        accepted: isAccepted,
+        acceptedAt: isAccepted ? new Date() : null,
+        revokedAt: isAccepted ? null : new Date(),
       });
 
-      // Recarrega os aceites com os termos relacionados para mapear corretamente
-      const refreshedAcceptances = await this.userTermAcceptanceRepository.find({
-        where: { userId: createdUser.id },
-        relations: ['term'],
+      userAcceptedFieldsToSave.push(newFieldEntity);
+    }
+
+    const savedFieldEntities = await this.userAcceptedCustomFieldRepository.save(userAcceptedFieldsToSave);
+
+    // 3. Log de histórico para todos os campos opcionais (aceitos e revogados)
+    for (const fieldEntity of savedFieldEntities) {
+      const fullEntity = await this.userAcceptedCustomFieldRepository.findOne({
+        where: { id: fieldEntity.id },
+        relations: [
+          'userTermAcceptance',
+          'userTermAcceptance.user',
+          'userTermAcceptance.term',
+          'customField',
+        ],
       });
 
-      const fieldAcceptances = customFields
-        .map((field) => {
-          const relatedAcceptance = refreshedAcceptances.find(
-            (acc) => acc.term?.id === field.term?.id
-          );
-          if (!relatedAcceptance) return null;
-
-          return this.userAcceptedCustomFieldRepository.create({
-            userTermAcceptance: relatedAcceptance,
-            customField: field,
-            accepted: true,
-            acceptedAt: new Date(),
-          });
-        })
-        .filter((item): item is UserAcceptedCustomFieldEntity => item !== null);
-
-      await this.userAcceptedCustomFieldRepository.save(fieldAcceptances);
-
-      // 🔹 Histórico de cada campo opcional aceito
-      for (const field of fieldAcceptances) {
-        const fullField = await this.userAcceptedCustomFieldRepository.findOne({
-          where: { id: field.id },
-          relations: [
-            'userTermAcceptance',
-            'userTermAcceptance.user',
-            'userTermAcceptance.term',
-            'customField',
-          ],
-        });
-
-        if (fullField) {
-          await this.historyService.log(
-            HistoryAction.ACCEPT_TERM_FIELD,
-            HistoryEntity.ACCEPTANCE,
-            fullField.id,
-            fullField,
-          );
-        }
+      if (fullEntity) {
+        await this.historyService.log(
+          fullEntity.accepted ? HistoryAction.ACCEPT_TERM_FIELD : HistoryAction.REVOKE_TERM_FIELD,
+          HistoryEntity.ACCEPTANCE,
+          fullEntity.id.toString(),
+          fullEntity,
+        );
       }
-
     }
 
     return createdUser;
   }
+
 
   async listUsers() {
     const usersSaved = await this.userRepository.find();

@@ -25,7 +25,7 @@ export class UserTermAcceptanceEntity {
   @OneToMany(() => UserAcceptedCustomFieldEntity, (field) => field.userTermAcceptance, { cascade: true })
   acceptedCustomFields: UserAcceptedCustomFieldEntity[];
 
-  @CreateDateColumn({ nullable: true })
+  @CreateDateColumn({ type: 'timestamp', nullable: true })
   acceptedAt: Date | null;
 
   @Column({ type: 'timestamp', nullable: true })

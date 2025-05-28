@@ -60,7 +60,7 @@ export default function UserPage() {
 
       SweetAlert.success('Sucesso', 'Usuário atualizado');
       fetchUsers();
-    } catch(error) {
+    } catch (error) {
       console.log(error)
       SweetAlert.error('Erro', 'Erro ao atualizar usuário');
     }
@@ -149,6 +149,7 @@ export default function UserPage() {
         )}
 
         <Table
+          bordered
           columns={columns}
           dataSource={users}
           rowKey="id"
